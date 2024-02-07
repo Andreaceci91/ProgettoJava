@@ -11,7 +11,5 @@ public class ControlManager {
         do {
             matchManager.turnoDiGioco();
         }while(true);
-
-
     }
 }
