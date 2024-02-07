@@ -225,8 +225,16 @@ public class MatchManager {
                 System.out.println(p.getNickname() + " " +p.getboardCardDimension());
             }
 
-            if(player.getboardCardDimension() == 0)
+            if(player.getboardCardDimension() == 0) {
+                player.incrementaPartiteVinte();
+
+                for(Player p: this.playerList){
+                    if(p != player)
+                        p.incrementaPartitePerse();
+                }
+
                 throw new RuntimeException("Gioco finito, ha vinto: " + player.getNickname());
+            }
         }
     }
 

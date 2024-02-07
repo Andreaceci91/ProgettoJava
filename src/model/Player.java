@@ -9,6 +9,7 @@ public class Player {
     private Object avatar; //da implementare
     private int partiteGiocate;
     private int partiteVinte;
+    private int partitePerse;
     private int lvPlayer;
     private int boardCardDimension;
     private List<Card> boardCard;
@@ -42,6 +43,9 @@ public class Player {
         this.boardCard = new ArrayList<>();
     }
     public void initializaRemainingCard(){this.remainingCards = this.boardCardDimension;}
+
+    public void incrementaPartiteVinte(){this.partiteVinte++;}
+    public void incrementaPartitePerse(){this.partitePerse++;}
     
     //Metodi Getter
     public String getNickname(){return this.nickname;}
