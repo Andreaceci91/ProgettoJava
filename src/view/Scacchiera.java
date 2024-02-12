@@ -79,7 +79,7 @@ public class Scacchiera implements Observer {
                 else{
                     if(i == 0 || i == 1){
                         playerIndex = 0;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex);
+                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
 
                         label = getjLabel(path);
@@ -87,7 +87,7 @@ public class Scacchiera implements Observer {
                     }
                     if(i == matriceScacchiera2.length-1 || i == matriceScacchiera2.length-2){
                         playerIndex = 1;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex);
+                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
 
                         label = getjLabel(path);
@@ -96,7 +96,7 @@ public class Scacchiera implements Observer {
 
                     if(i >= 2 && j <= 1){
                         playerIndex = 2;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex);
+                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
 
                         label = getjLabel(path);
@@ -105,7 +105,7 @@ public class Scacchiera implements Observer {
 
                     if(i >= 2 && j >= 17){
                         playerIndex = 3;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex);
+                        path = getStringPathFromCard(listaPlayer, k, playerIndex, matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
 
                         label = getjLabel(path);
@@ -131,22 +131,12 @@ public class Scacchiera implements Observer {
         return label;
     }
 
-    private static String getStringPathFromCard(List<Player> listaPlayer, int[] k, int playerIndex) {
+    private static String getStringPathFromCard(List<Player> listaPlayer, int[] k, int playerIndex, int numeroMatrice) {
         String path;
-        Player player1 = listaPlayer.get(playerIndex);
+        Player player = listaPlayer.get(playerIndex);
         Card card = null;
 
-        if(playerIndex == 0)
-            card = player1.getCardFromIndex(player1.getboardCardDimension() - k[playerIndex]);
-
-        if(playerIndex == 3)
-            card = player1.getCardFromIndex(k[playerIndex]+1);
-
-        if(playerIndex == 1)
-            card = player1.getCardFromIndex(k[playerIndex]+1);
-
-        if(playerIndex == 2)
-            card = player1.getCardFromIndex(k[playerIndex]+1);
+        card = player.getCardFromIndex(numeroMatrice);
 
         String cardRank = card.getRank().toString().toLowerCase();
         String normalizedCardRank = Character.toUpperCase(cardRank.charAt(0)) + cardRank.substring(1);
@@ -185,6 +175,7 @@ public class Scacchiera implements Observer {
     }
 
     private void impostaMatricePlayerRight(List<Player> listaPlayer) {
+        int indice = 10;
         int nCol;
         int numeroCartePlayer = (listaPlayer.get(3)).getboardCardDimension();
 
@@ -195,14 +186,14 @@ public class Scacchiera implements Observer {
 
         if (nCol == 1) {
             for (int i = 3; i < 3 + numeroCartePlayer; i++) {
-                matriceScacchiera2[i][17] = 1;
+                matriceScacchiera2[i][17] = indice--;
             }
         }
 
         if (nCol == 2 && numeroCartePlayer % 2 == 0) {
-            for (int i = 3; i < 3 + numeroCartePlayer/2; i++) {
-                for (int j = 17; j < 19 ; j++) {
-                    matriceScacchiera2[i][j] = 1;
+            for (int j = 17; j < 19 ; j++) {
+                 for (int i = 3; i < 3 + numeroCartePlayer/2; i++){
+                    matriceScacchiera2[i][j] = indice--;
                 }
             }
         }
@@ -210,14 +201,15 @@ public class Scacchiera implements Observer {
         if (nCol == 2 && numeroCartePlayer % 2 != 0) {
 
             for (int i = 3; i < numeroCartePlayer / 2+1; i++)
-                matriceScacchiera2[i][17] = 1;
+                matriceScacchiera2[i][17] = indice--;
 
             for (int i = 3; i < numeroCartePlayer / 2; i++)
-                matriceScacchiera2[i][18] = 1;
+                matriceScacchiera2[i][18] = indice--;
         }
     }
 
     private void impostaMatricePlayerLeft(List<Player> listaPlayer) {
+        int indice = 10;
 
         int nCol;
         int numeroCartePlayer = (listaPlayer.get(2)).getboardCardDimension();
@@ -229,14 +221,14 @@ public class Scacchiera implements Observer {
 
         if (nCol == 1) {
             for (int i = 3; i < 3 + numeroCartePlayer; i++) {
-                matriceScacchiera2[i][0] = 1;
+                matriceScacchiera2[i][0] = indice--;
             }
         }
 
         if (nCol == 2 && numeroCartePlayer % 2 == 0) {
-            for (int i = 3; i < 3 + numeroCartePlayer/2; i++) {
-                for (int j = 0; j < 2 ; j++) {
-                    matriceScacchiera2[i][j] = 1;
+            for (int j = 0; j < 2 ; j++) {
+                for (int i = 3; i < 3 + numeroCartePlayer/2; i++) {
+                    matriceScacchiera2[i][j] = indice--;
                 }
             }
         }
@@ -244,10 +236,10 @@ public class Scacchiera implements Observer {
         if (nCol == 2 && numeroCartePlayer % 2 != 0) {
 
             for (int i = 3; i < numeroCartePlayer / 2+1; i++)
-                matriceScacchiera2[i][0] = 1;
+                matriceScacchiera2[i][0] = indice--;
 
             for (int i = 3; i < numeroCartePlayer / 2; i++)
-                matriceScacchiera2[i][1] = 1;
+                matriceScacchiera2[i][1] = indice--;
         }
     }
 
@@ -393,6 +385,6 @@ public class Scacchiera implements Observer {
         player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.NOVE));
         player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DIECI));
 
-        Scacchiera scacchiera = new Scacchiera(Arrays.asList(player1,player2, player3, player4));
+        Scacchiera scacchiera = new Scacchiera(Arrays.asList(player1,player2));
     }
 }
