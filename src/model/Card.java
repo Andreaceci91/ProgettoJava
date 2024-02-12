@@ -15,6 +15,7 @@ public class Card {
     }
 
     public Card(CardRank rank){
+        this.seed = null;
         this.rank = rank;
     }
 

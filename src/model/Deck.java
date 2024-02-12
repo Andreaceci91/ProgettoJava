@@ -46,24 +46,30 @@ public class Deck {
                 this.deck.add(new Card(CardRank.JOLLY));
                 this.deck.add(new Card(CardRank.JOLLY));
                 this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
                 break;
         }
     }
 
     private static int getNDeck(int numberOfPlayer) {
         int nDeck;
-        if(numberOfPlayer == 0)
-            throw new IllegalArgumentException("Devono esserci dei giocatori");
-        else if(numberOfPlayer == 1)
-            throw new IllegalArgumentException("Non puoi giocare da solo");
-        else if(numberOfPlayer == 2)
-            nDeck = 1;
-        else if( numberOfPlayer == 3)
-            nDeck = 2;
-        else
-            throw  new IllegalArgumentException("Si può giocare massimo contro 3 avvesari virtuali");
+
+        switch ((numberOfPlayer)){
+            case 0:
+                throw new IllegalArgumentException("Devono esserci dei giocatori");
+            case 1:
+                throw new IllegalArgumentException("Non puoi giocare da solo");
+            case 2:
+                nDeck = 1;
+                break;
+            case 3:
+                nDeck = 2;
+                break;
+            case 4:
+                nDeck = 2;
+                break;
+            default:
+                throw new IllegalArgumentException("Puoi giocare massimo con 3 giocatori virtuali");
+        }
         return nDeck;
     }
 

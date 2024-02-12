@@ -245,6 +245,10 @@ public class MatchManager {
         }
     }
 
+    public List<Player> getPlayerList(){
+        return this.playerList;
+    }
+
 
 
 }
