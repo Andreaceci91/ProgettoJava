@@ -2,9 +2,10 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 import java.util.Scanner;
 
-public class MatchManager {
+public class MatchManager extends Observable {
 
     List<Player> playerList;
     Deck gameDeck;
@@ -40,6 +41,9 @@ public class MatchManager {
         for(Player p: playerList){
             assegnaCarte(p, this.gameDeck);
         }
+
+        setChanged();
+        notifyObservers(playerList);
 
         //Giro prima carta sul tavolo
         discardedCards.addCard(this.gameDeck.giveCard());
@@ -249,6 +253,7 @@ public class MatchManager {
         return this.playerList;
     }
 
+    public void setNumberOfPlayer(int numberOfPlayer){this.numberOfPlayer = numberOfPlayer;}
 
 
 }

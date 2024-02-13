@@ -10,10 +10,9 @@ public class ControlManager {
         System.out.println("ciao");
 
         MatchManager matchManager = new MatchManager(4);
-        Scacchiera scacchiera = new Scacchiera(matchManager.getPlayerList());
+        Scacchiera scacchiera = new Scacchiera();
 
-        for(Player p : matchManager.getPlayerList())
-            p.showCard();
+        matchManager.addObserver(scacchiera);
 
 //        do {
 //            matchManager.turnoDiGioco();

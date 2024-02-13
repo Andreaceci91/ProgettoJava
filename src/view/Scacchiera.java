@@ -4,6 +4,7 @@ import model.Card;
 import model.CardRank;
 import model.CardSeed;
 import model.Player;
+import model.MatchManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -50,99 +51,160 @@ public class Scacchiera implements Observer {
     int nRighe = 9;
     int nColonne = 9;
 
+    private String path = "";
+
     private int[][] matriceScacchiera2 = new int[nRighe][nColonne];
 
-    public Scacchiera(List<Player> listaPlayer){
-        creaScacchiera(listaPlayer);
-
-    }
+    public Scacchiera(){}
 
     public void creaScacchiera(List<Player> listaPlayer){
-        MyFrame myFrame = new MyFrame();
-        myFrame.setSize(new Dimension(1440, 900));
-        myFrame.setLayout(new GridBagLayout());
-        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        MyFrame mainFrame = new MyFrame();
+        mainFrame.setSize(new Dimension(1440, 900));
+        mainFrame.setLayout(new GridBagLayout());
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MyPanel myPanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
-        myPanel.setLayout(new GridLayout(nRighe,nColonne));
-        myPanel.setPreferredSize(new Dimension(693, 774));
+        MyPanel gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
+        gamePanel.setLayout(new GridLayout(nRighe,nColonne));
+        gamePanel.setPreferredSize(new Dimension(693, 774));
 
-        JPanel panelProva = new JPanel(new GridLayout(nRighe, nColonne));
-
-        JLabel label;
+        JLabel emptyLabel;
+        JButton cardButton;
+        ImageIcon cardImageIcon;
 
         impostaMatriceIniziale(listaPlayer);
 
         int playerIndex;
         int[] k = new int[listaPlayer.size()];
 
-        String path = "";
+        fromMatrixToImage(listaPlayer, gamePanel, k);
 
+        addingMainElementToFrame(mainFrame, gamePanel);
+
+        stampaMatrice();
+        mainFrame.setVisible(true);
+    }
+
+    private void fromMatrixToImage(List<Player> listaPlayer, MyPanel gamePanel, int[] k) {
+        ImageIcon cardImageIcon;
+        int playerIndex;
+        JButton cardButton;
+        JLabel emptyLabel;
         for(int i = 0; i < matriceScacchiera2.length; i++){
             for(int j = 0; j < matriceScacchiera2[0].length; j++){
-
                 if(matriceScacchiera2[i][j] == 0){
-                    label = new JLabel();
-                    label.setPreferredSize(new Dimension(77,86));
-                    label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-                    myPanel.add(label);
+                    emptyLabel = new JLabel();
+                    emptyLabel.setPreferredSize(new Dimension(77,86));
+                    emptyLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                    gamePanel.add(emptyLabel);
                 }
                 else{
-                    if(i == 0 || i == 1){
+                    if(i <= 1){
                         playerIndex = 0;
                         path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
 
-                        label = getjLabel(path);
-                        myPanel.add(label);
+                        cardImageIcon = new ImageIcon(path);
+                        cardButton = new JButton(cardImageIcon);
+                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        gamePanel.add(cardButton);
                     }
-                    if(i == matriceScacchiera2.length-1 || i == matriceScacchiera2.length-2){
+                    if(i >= matriceScacchiera2.length-2){
                         playerIndex = 1;
                         path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
-
-                        label = getjLabel(path);
-                        myPanel.add(label);
+                        cardImageIcon = new ImageIcon(path);
+                        cardButton = new JButton(cardImageIcon);
+                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        gamePanel.add(cardButton);
                     }
 
                     if(i >= 2 && j <= 1){
                         playerIndex = 2;
                         path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
-
-                        label = getjLabel(path);
-                        myPanel.add(label);
+                        cardImageIcon = new ImageIcon(path);
+                        cardButton = new JButton(cardImageIcon);
+                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        gamePanel.add(cardButton);
                     }
 
                     if(i >= 2 && j >= matriceScacchiera2[0].length-2){
                         playerIndex = 3;
                         path = getStringPathFromCard(listaPlayer, k, playerIndex, matriceScacchiera2[i][j]);
                         k[playerIndex] ++;
-
-                        label = getjLabel(path);
-                        myPanel.add(label);
+                        cardImageIcon = new ImageIcon(path);
+                        cardButton = new JButton(cardImageIcon);
+                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        gamePanel.add(cardButton);
                     }
                 }
             }
         }
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx = 1;
-        constraints.weighty = 1;
-        myFrame.add(new JTextArea("Text 1"));
-        myFrame.add(new JTextArea("Text 2"));
-        myFrame.add(new JTextArea("Text 3"));
+    }
 
-        myFrame.add(new JTextArea("Text 4"));
-        myFrame.add(myPanel);
-        myFrame.add(new JTextArea("Text 6"));
+    private static void addingMainElementToFrame(MyFrame mainFrame, MyPanel gamePanel) {
+        GridBagConstraints gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 0;
+        gbcTextArea.gridy = 0;
+        mainFrame.add(new JTextArea("Text 1"),gbcTextArea);
 
-        myFrame.add(new JTextArea("Text 7"));
-        myFrame.add(new JTextArea("Text 8"));
-        myFrame.add(new JTextArea("Text 9"));
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 1;
+        gbcTextArea.gridy = 0;
+        mainFrame.add(new JTextArea("Text 2"), gbcTextArea);
 
-        stampaMatrice();
-        myFrame.setVisible(true);
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 2;
+        gbcTextArea.gridy = 0;
+        mainFrame.add(new JTextArea("Text 3"),gbcTextArea);
 
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 0;
+        gbcTextArea.gridy = 1;
+        mainFrame.add(new JTextArea("Text 4"),gbcTextArea);
+
+        GridBagConstraints gbcMyPanel = new GridBagConstraints();
+        gbcMyPanel.weightx = 0.1;
+        gbcMyPanel.weighty = 0.1;
+        gbcMyPanel.gridx = 1;
+        gbcMyPanel.gridy = 1;
+        mainFrame.add(gamePanel, gbcMyPanel);
+
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 2;
+        gbcTextArea.gridy = 1;
+        mainFrame.add(new JTextArea("Text 6"),gbcTextArea);
+
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 0;
+        gbcTextArea.gridy = 2;
+        mainFrame.add(new JTextArea("Text 7"),gbcTextArea);
+
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 1;
+        gbcTextArea.gridy = 2;
+        mainFrame.add(new JTextArea("Text 8"),gbcTextArea);
+
+        gbcTextArea = new GridBagConstraints();
+        gbcTextArea.weighty = 0.1;
+        gbcTextArea.weightx = 0.1;
+        gbcTextArea.gridx = 2;
+        gbcTextArea.gridy = 2;
+        mainFrame.add(new JTextArea("Text 9"), gbcTextArea);
     }
 
     private static JLabel getjLabel(String path) {
@@ -202,6 +264,13 @@ public class Scacchiera implements Observer {
                 impostaMatricePlayerRight(listaPlayer);
                 break;
         }
+
+        impostaDiscardedCardsToMatrix();
+
+    }
+
+    private void impostaDiscardedCardsToMatrix() {
+
     }
 
     private void impostaMatricePlayerRight(List<Player> listaPlayer) {
@@ -358,60 +427,67 @@ public class Scacchiera implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        if(arg instanceof List<?>){
+            List<?> list = (List<?>) arg;
+
+            if(list.get(0) instanceof Player)
+                creaScacchiera((List<Player>)arg);
+
+        }
 
     }
 
 
     public static void main(String[] args){
-        Player player1 = new Player("Andrea");
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.ASSO));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DUE));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.TRE));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.QUATTRO));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.CINQUE));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SEI));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SETTE));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.OTTO));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.NOVE));
-        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DIECI));
-
-        Player player2 = new Player("Francesco");
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.ASSO));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DUE));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.TRE));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.QUATTRO));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.CINQUE));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SEI));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SETTE));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.OTTO));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.NOVE));
-        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DIECI));
-
-        Player player3 = new Player("Flavio");
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.ASSO));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DUE));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.TRE));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.QUATTRO));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.CINQUE));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SEI));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SETTE));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.OTTO));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.NOVE));
-        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DIECI));
-
-        Player player4 = new Player("Gaetano");
-
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.ASSO));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DUE));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.TRE));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.QUATTRO));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.CINQUE));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SEI));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SETTE));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.OTTO));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.NOVE));
-        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DIECI));
-
-        Scacchiera scacchiera = new Scacchiera(Arrays.asList(player1,player2, player3, player4));
+//        Player player1 = new Player("Andrea");
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.ASSO));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DUE));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.TRE));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.QUATTRO));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.CINQUE));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SEI));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SETTE));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.OTTO));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.NOVE));
+//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DIECI));
+//
+//        Player player2 = new Player("Francesco");
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.ASSO));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DUE));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.TRE));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.QUATTRO));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.CINQUE));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SEI));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SETTE));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.OTTO));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.NOVE));
+//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DIECI));
+//
+//        Player player3 = new Player("Flavio");
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.ASSO));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DUE));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.TRE));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.QUATTRO));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.CINQUE));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SEI));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SETTE));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.OTTO));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.NOVE));
+//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DIECI));
+//
+//        Player player4 = new Player("Gaetano");
+//
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.ASSO));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DUE));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.TRE));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.QUATTRO));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.CINQUE));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SEI));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SETTE));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.OTTO));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.NOVE));
+//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DIECI));
+//
+//        Scacchiera scacchiera = new Scacchiera(Arrays.asList(player1,player2, player3, player4));
     }
 }
