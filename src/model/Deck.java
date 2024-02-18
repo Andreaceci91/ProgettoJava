@@ -135,6 +135,10 @@ public class Deck {
         return this.deck.size();
     }
 
+    public Card getLast(){
+        return this.deck.getLast();
+    }
+
     public static Deck mischiaMazzo(Deck cards){
         Collections.shuffle(cards.deck);
 

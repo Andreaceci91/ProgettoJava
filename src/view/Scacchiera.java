@@ -1,10 +1,7 @@
 package view;
 
 import model.Card;
-import model.CardRank;
-import model.CardSeed;
 import model.Player;
-import model.MatchManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,12 +9,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.List;
 
-class MyFrame extends JFrame{
+class MyFrame extends JFrame {
 }
 
 class MyPanel extends JPanel {
@@ -45,38 +41,42 @@ public class Scacchiera implements Observer {
     final int lCard = 77;
     final int hCard = 88;
 
-    int widthPanel =  77 * 9;
+    int widthPanel = 77 * 9;
     int heightPanel = 88 * 9;
 
     int nRighe = 9;
     int nColonne = 9;
 
-    private String path = "";
+    private int[][] matriceScacchiera2;
 
-    private int[][] matriceScacchiera2 = new int[nRighe][nColonne];
+    JTextArea player1TextArea = new JTextArea();
+    JTextArea player2TextArea = new JTextArea();
+    JTextArea player3TextArea = new JTextArea();
+    JTextArea player4TextArea = new JTextArea();
 
-    public Scacchiera(){}
+    MyPanel gamePanel;
+    MyPanel appPanel;
+    MyFrame mainFrame;
 
-    public void creaScacchiera(List<Player> listaPlayer){
-        MyFrame mainFrame = new MyFrame();
+    public Scacchiera() {
+    }
+
+    public void creaScacchiera(List<Player> listaPlayer) {
+        matriceScacchiera2 = new int[nRighe][nColonne];
+        mainFrame = new MyFrame();
         mainFrame.setSize(new Dimension(1440, 900));
         mainFrame.setLayout(new GridBagLayout());
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MyPanel gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
-        gamePanel.setLayout(new GridLayout(nRighe,nColonne));
-        gamePanel.setPreferredSize(new Dimension(693, 774));
-
-        JLabel emptyLabel;
-        JButton cardButton;
-        ImageIcon cardImageIcon;
+        gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
+        gamePanel.setLayout(new GridLayout(9, 9));
+        gamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
 
         impostaMatriceIniziale(listaPlayer);
-
-        int playerIndex;
-        int[] k = new int[listaPlayer.size()];
-
-        fromMatrixToImage(listaPlayer, gamePanel, k);
+        System.out.println("*****************************");
+        stampaMatrice();
+        System.out.println("*****************************");
+        composeGamePanelFromMatrix(listaPlayer, gamePanel);
 
         addingMainElementToFrame(mainFrame, gamePanel);
 
@@ -84,170 +84,187 @@ public class Scacchiera implements Observer {
         mainFrame.setVisible(true);
     }
 
-    private void fromMatrixToImage(List<Player> listaPlayer, MyPanel gamePanel, int[] k) {
+    private void composeGamePanelFromMatrix(List<Player> listaPlayer, MyPanel gamePanel) {
         ImageIcon cardImageIcon;
         int playerIndex;
         JButton cardButton;
-        JLabel emptyLabel;
-        for(int i = 0; i < matriceScacchiera2.length; i++){
-            for(int j = 0; j < matriceScacchiera2[0].length; j++){
-                if(matriceScacchiera2[i][j] == 0){
-                    emptyLabel = new JLabel();
-                    emptyLabel.setPreferredSize(new Dimension(77,86));
-                    emptyLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-                    gamePanel.add(emptyLabel);
-                }
-                else{
-                    if(i <= 1){
+        JButton emptyButton;
+        Player player;
+        Card playerCardVisionata;
+        String pathPlayerCardVisionata;
+
+        for (int i = 0; i < matriceScacchiera2.length; i++) {
+            for (int j = 0; j < matriceScacchiera2[0].length; j++) {
+
+                if (matriceScacchiera2[i][j] == 0) {
+                    emptyButton = new JButton();
+                    emptyButton.setPreferredSize(new Dimension(lCard, hCard));
+                    emptyButton.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                    gamePanel.add(emptyButton);
+                } else {
+                    if (i <= 1) {
                         playerIndex = 0;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
-                        k[playerIndex] ++;
 
-                        cardImageIcon = new ImageIcon(path);
+                        player = listaPlayer.get(playerIndex);
+                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
+                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+
+                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
                         cardButton = new JButton(cardImageIcon);
-                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                        if (playerCardVisionata.getFaceUp())
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+                        else
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
                         gamePanel.add(cardButton);
                     }
-                    if(i >= matriceScacchiera2.length-2){
+                    if (i >= matriceScacchiera2.length - 2) {
                         playerIndex = 1;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
-                        k[playerIndex] ++;
-                        cardImageIcon = new ImageIcon(path);
+                        player = listaPlayer.get(playerIndex);
+                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
+                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+
+                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
                         cardButton = new JButton(cardImageIcon);
-                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                        if (playerCardVisionata.getFaceUp())
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                        else
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
                         gamePanel.add(cardButton);
                     }
 
-                    if(i >= 2 && j <= 1){
+                    if (i >= 2 && j <= 1) {
                         playerIndex = 2;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex,matriceScacchiera2[i][j]);
-                        k[playerIndex] ++;
-                        cardImageIcon = new ImageIcon(path);
+                        player = listaPlayer.get(playerIndex);
+                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
+                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+
+                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
                         cardButton = new JButton(cardImageIcon);
-                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                        if (playerCardVisionata.getFaceUp())
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                        else
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
                         gamePanel.add(cardButton);
                     }
 
-                    if(i >= 2 && j >= matriceScacchiera2[0].length-2){
+                    if (i >= 2 && j >= matriceScacchiera2[0].length - 2) {
                         playerIndex = 3;
-                        path = getStringPathFromCard(listaPlayer, k, playerIndex, matriceScacchiera2[i][j]);
-                        k[playerIndex] ++;
-                        cardImageIcon = new ImageIcon(path);
+                        player = listaPlayer.get(playerIndex);
+                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
+                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+
+                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
                         cardButton = new JButton(cardImageIcon);
-                        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                        if (playerCardVisionata.getFaceUp())
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                        else
+                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
                         gamePanel.add(cardButton);
                     }
                 }
             }
         }
+
+        ImageIcon deckImageIcon = new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/" +
+                "iloveimg-resized/CartaCoperta.png");
+        JButton deckButton = new JButton(deckImageIcon);
+        sostituisciElemento(5, 4, deckButton);
+
+
     }
 
-    private static void addingMainElementToFrame(MyFrame mainFrame, MyPanel gamePanel) {
-        GridBagConstraints gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 0;
-        gbcTextArea.gridy = 0;
-        mainFrame.add(new JTextArea("Text 1"),gbcTextArea);
+    private void addingMainElementToFrame(MyFrame mainFrame, MyPanel gamePanel) {
+        GridBagConstraints gbcEmpty1TextArea = new GridBagConstraints();
+        gbcEmpty1TextArea.weighty = 0.1;
+        gbcEmpty1TextArea.weightx = 0.1;
+        gbcEmpty1TextArea.gridx = 0;
+        gbcEmpty1TextArea.gridy = 0;
+        mainFrame.add(new JTextArea("Text 1"), gbcEmpty1TextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 1;
-        gbcTextArea.gridy = 0;
-        mainFrame.add(new JTextArea("Text 2"), gbcTextArea);
+        GridBagConstraints gbcPlayer1TextArea = new GridBagConstraints();
+        gbcPlayer1TextArea.weighty = 0.1;
+        gbcPlayer1TextArea.weightx = 0.1;
+        gbcPlayer1TextArea.gridx = 1;
+        gbcPlayer1TextArea.gridy = 0;
+        mainFrame.add(player1TextArea, gbcPlayer1TextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 2;
-        gbcTextArea.gridy = 0;
-        mainFrame.add(new JTextArea("Text 3"),gbcTextArea);
+        GridBagConstraints gbcEmpty2TextArea = new GridBagConstraints();
+        gbcEmpty2TextArea.weighty = 0.1;
+        gbcEmpty2TextArea.weightx = 0.1;
+        gbcEmpty2TextArea.gridx = 2;
+        gbcEmpty2TextArea.gridy = 0;
+        mainFrame.add(new JTextArea("Text 2"), gbcEmpty2TextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 0;
-        gbcTextArea.gridy = 1;
-        mainFrame.add(new JTextArea("Text 4"),gbcTextArea);
+        GridBagConstraints gbcPlayer3TextArea = new GridBagConstraints();
+        gbcPlayer3TextArea.weighty = 0.1;
+        gbcPlayer3TextArea.weightx = 0.1;
+        gbcPlayer3TextArea.gridx = 0;
+        gbcPlayer3TextArea.gridy = 1;
+        mainFrame.add(player3TextArea, gbcPlayer3TextArea);
 
         GridBagConstraints gbcMyPanel = new GridBagConstraints();
         gbcMyPanel.weightx = 0.1;
         gbcMyPanel.weighty = 0.1;
         gbcMyPanel.gridx = 1;
         gbcMyPanel.gridy = 1;
+
         mainFrame.add(gamePanel, gbcMyPanel);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 2;
-        gbcTextArea.gridy = 1;
-        mainFrame.add(new JTextArea("Text 6"),gbcTextArea);
+        GridBagConstraints gbcPlayer4TextArea = new GridBagConstraints();
+        gbcPlayer4TextArea.weighty = 0.1;
+        gbcPlayer4TextArea.weightx = 0.1;
+        gbcPlayer4TextArea.gridx = 2;
+        gbcPlayer4TextArea.gridy = 1;
+        mainFrame.add(player4TextArea, gbcPlayer4TextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 0;
-        gbcTextArea.gridy = 2;
-        mainFrame.add(new JTextArea("Text 7"),gbcTextArea);
+        GridBagConstraints gbcEmpty3TextArea = new GridBagConstraints();
+        gbcEmpty3TextArea.weighty = 0.1;
+        gbcEmpty3TextArea.weightx = 0.1;
+        gbcEmpty3TextArea.gridx = 0;
+        gbcEmpty3TextArea.gridy = 2;
+        mainFrame.add(new JTextArea("Text 3"), gbcEmpty3TextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 1;
-        gbcTextArea.gridy = 2;
-        mainFrame.add(new JTextArea("Text 8"),gbcTextArea);
 
-        gbcTextArea = new GridBagConstraints();
-        gbcTextArea.weighty = 0.1;
-        gbcTextArea.weightx = 0.1;
-        gbcTextArea.gridx = 2;
-        gbcTextArea.gridy = 2;
-        mainFrame.add(new JTextArea("Text 9"), gbcTextArea);
+        GridBagConstraints gbcPlayer2TextArea = new GridBagConstraints();
+        gbcPlayer2TextArea.weighty = 0.1;
+        gbcPlayer2TextArea.weightx = 0.1;
+        gbcPlayer2TextArea.gridx = 1;
+        gbcPlayer2TextArea.gridy = 2;
+        mainFrame.add(player2TextArea, gbcPlayer2TextArea);
+
+        GridBagConstraints gbcEmpty4TextArea = new GridBagConstraints();
+        gbcEmpty4TextArea.weighty = 0.1;
+        gbcEmpty4TextArea.weightx = 0.1;
+        gbcEmpty4TextArea.gridx = 2;
+        gbcEmpty4TextArea.gridy = 2;
+        mainFrame.add(new JTextArea("Text 4"), gbcEmpty4TextArea);
     }
 
-    private static JLabel getjLabel(String path) {
-        JLabel label;
-        label = new JLabel(new ImageIcon(path));
-        label.setPreferredSize(new Dimension(77,86));
-        label.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        label.setOpaque(true);
-        return label;
-    }
-
-    private static String getStringPathFromCard(List<Player> listaPlayer, int[] k, int playerIndex, int numeroMatrice) {
+    private static String getStringPathFromCard(Card card) {
         String path;
-        Player player = listaPlayer.get(playerIndex);
-        Card card = null;
-
-        card = player.getCardFromIndex(numeroMatrice);
-
         String cardRank = card.getRank().toString().toLowerCase();
         String normalizedCardRank = Character.toUpperCase(cardRank.charAt(0)) + cardRank.substring(1);
 
         String normalizedCardSeed = "";
 
-        if(card.getSeed() != null) {
+        if (card.getSeed() != null) {
             String cardSeed = card.getSeed().toString().toLowerCase();
             normalizedCardSeed = Character.toUpperCase(cardSeed.charAt(0)) + cardSeed.substring(1);
         }
-        else{
-            normalizedCardSeed = "";
-        }
+
         path = "";
         path = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized" +
-                "/" + normalizedCardSeed +normalizedCardRank + ".png";
+                "/" + normalizedCardSeed + normalizedCardRank + ".png";
 
         return path;
-    }
-
-    private void stampaMatrice() {
-        for(int[] riga :matriceScacchiera2){
-            for(int el : riga)
-                System.out.print(el);
-            System.out.print("\n");
-        }
     }
 
     private void impostaMatriceIniziale(List<Player> listaPlayer) {
@@ -255,7 +272,7 @@ public class Scacchiera implements Observer {
         impostaMatricePlayerUp(listaPlayer);
         impostaMatricePlayerDown(listaPlayer);
 
-        switch (listaPlayer.size()){
+        switch (listaPlayer.size()) {
             case 3:
                 impostaMatricePlayerLeft(listaPlayer);
                 break;
@@ -264,13 +281,6 @@ public class Scacchiera implements Observer {
                 impostaMatricePlayerRight(listaPlayer);
                 break;
         }
-
-        impostaDiscardedCardsToMatrix();
-
-    }
-
-    private void impostaDiscardedCardsToMatrix() {
-
     }
 
     private void impostaMatricePlayerRight(List<Player> listaPlayer) {
@@ -285,13 +295,13 @@ public class Scacchiera implements Observer {
 
         if (nFileCarta == 1) {
             for (int i = 2; i < 3 + numeroCartePlayer; i++) {
-                matriceScacchiera2[i][nColonne-2] = indice--;
+                matriceScacchiera2[i][nColonne - 2] = indice--;
             }
         }
 
         if (nFileCarta == 2 && numeroCartePlayer % 2 == 0) {
-            for (int j = nColonne-1; j >= nColonne-2 ; j--) {
-                 for (int i = 2; i < 2 + numeroCartePlayer/2; i++){
+            for (int j = nColonne - 1; j >= nColonne - 2; j--) {
+                for (int i = 2; i < 2 + numeroCartePlayer / 2; i++) {
                     matriceScacchiera2[i][j] = indice--;
                 }
             }
@@ -299,11 +309,11 @@ public class Scacchiera implements Observer {
 
         if (nFileCarta == 2 && numeroCartePlayer % 2 != 0) {
 
-            for (int i = 3; i < numeroCartePlayer / 2; i++)
-                matriceScacchiera2[i][18] = indice--;
+            for (int i = 2; i < 2 + numeroCartePlayer / 2; i++)
+                matriceScacchiera2[i][nColonne - 1] = indice--;
 
-            for (int i = 3; i < numeroCartePlayer / 2+1; i++)
-                matriceScacchiera2[i][17] = indice--;
+            for (int i = 2; i < 2 + numeroCartePlayer / 2 + 1; i++)
+                matriceScacchiera2[i][nColonne - 2] = indice--;
         }
     }
 
@@ -325,8 +335,8 @@ public class Scacchiera implements Observer {
         }
 
         if (nCol == 2 && numeroCartePlayer % 2 == 0) {
-            for (int j = 1; j >= 0 ; j--) {
-                for (int i = 2; i < 2 + numeroCartePlayer/2; i++) {
+            for (int j = 1; j >= 0; j--) {
+                for (int i = 2; i < 2 + numeroCartePlayer / 2; i++) {
                     matriceScacchiera2[i][j] = indice++;
                 }
             }
@@ -334,10 +344,10 @@ public class Scacchiera implements Observer {
 
         if (nCol == 2 && numeroCartePlayer % 2 != 0) {
 
-            for (int i = 2; i < 2 + numeroCartePlayer / 2+1; i++)
+            for (int i = 2; i < 2 + numeroCartePlayer / 2 + 1; i++)
                 matriceScacchiera2[i][1] = indice++;
 
-            for (int i = 2; i < 2+ numeroCartePlayer / 2; i++)
+            for (int i = 2; i < 2 + numeroCartePlayer / 2; i++)
                 matriceScacchiera2[i][0] = indice++;
         }
     }
@@ -353,33 +363,31 @@ public class Scacchiera implements Observer {
             nFileCarte = 2;
 
         if (nFileCarte == 1) {
-            for (int j = 2; j < 2+ numeroCartePlayer; j++) {
+            for (int j = 2; j < 2 + numeroCartePlayer; j++) {
                 matriceScacchiera2[1][j] = indice--;
             }
         }
 
         if (nFileCarte == 2 && numeroCartePlayer % 2 == 0) {
             for (int i = 0; i < nFileCarte; i++) {
-                for (int j = 2; j < 2 +(numeroCartePlayer / 2); j++) {
+                for (int j = 2; j < 2 + (numeroCartePlayer / 2); j++) {
                     matriceScacchiera2[i][j] = indice--;
                 }
             }
         }
 
         if (nFileCarte == 2 && numeroCartePlayer % 2 != 0) {
-
             for (int i = 0; i < nFileCarte; i++) {
-
                 if (i == 0) {
                     for (int j = 2; j < 2 + numeroCartePlayer / 2; j++)
                         matriceScacchiera2[i][j] = indice--;
-                }
-                else{
+                } else {
                     for (int j = 2; j < 2 + numeroCartePlayer / 2 + 1; j++)
                         matriceScacchiera2[i][j] = indice--;
                 }
             }
         }
+
     }
 
     private void impostaMatricePlayerDown(List<Player> listaPlayer) {
@@ -396,49 +404,219 @@ public class Scacchiera implements Observer {
         if (nFileCarte == 1) {
 
             for (int j = 2; j < 2 + numeroCartePlayer; j++) {
-                matriceScacchiera2[nRighe-2][j] = indice++;
+                matriceScacchiera2[nRighe - 2][j] = indice++;
             }
 
         }
 
+        //Pari
         if (nFileCarte == 2 && numeroCartePlayer % 2 == 0) {
-            for (int i = nRighe-2; i < nRighe-2 + nFileCarte; i++) {
-                for (int j = 2; j < 2 +(numeroCartePlayer / 2); j++) {
+            for (int i = nRighe - 2; i < nRighe - 2 + nFileCarte; i++) {
+                for (int j = 2; j < 2 + (numeroCartePlayer / 2); j++) {
                     matriceScacchiera2[i][j] = indice++;
                 }
             }
         }
 
+        //Dispari
         if (nFileCarte == 2 && numeroCartePlayer % 2 != 0) {
-
-            for (int i = nRighe-2; i < nRighe-2 + nFileCarte; i++) {
-
-                if (i == 0) {
-                    for (int j = 2; j < 2+ numeroCartePlayer / 2 +1; j++)
+            for (int i = nRighe - 2; i < nRighe - 2 + nFileCarte; i++) {
+                if (i == nRighe - 2) {
+                    for (int j = 2; j < 2 + numeroCartePlayer / 2 + 1; j++)
                         matriceScacchiera2[i][j] = indice++;
-                }
-                else{
-                    for (int j = 2; j < 2+ numeroCartePlayer / 2 ; j++)
+                } else {
+                    for (int j = 2; j < 2 + numeroCartePlayer / 2; j++)
                         matriceScacchiera2[i][j] = indice++;
                 }
             }
         }
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        if(arg instanceof List<?>){
-            List<?> list = (List<?>) arg;
+    private void segnaleModificaCartaSulTavolo(Card card) {
+        String path = getStringPathFromCard(card);
+        ImageIcon imageIcon = new ImageIcon(path);
+        JButton buttonCard = new JButton(imageIcon);
+        buttonCard.setPreferredSize(new Dimension(lCard, hCard));
+        buttonCard.setOpaque(true);
+        sostituisciElemento(3, 4, buttonCard);
+    }
 
-            if(list.get(0) instanceof Player)
-                creaScacchiera((List<Player>)arg);
-
-        }
+    private void segnaleModificaCartaVicinoGiocatore(Card card, int p_col, int p_row) {
+        String path = getStringPathFromCard(card);
+        ImageIcon imageIcon = new ImageIcon(path);
+        JButton buttonCard = new JButton(imageIcon);
+        buttonCard.setPreferredSize(new Dimension(lCard, hCard));
+        buttonCard.setOpaque(true);
+        sostituisciElemento(p_col, p_row, buttonCard);
+        repaintPanel();
 
     }
 
+    private void segnaleRimuoviCartaSpecifica(int p_col, int p_row) {
+        JButton buttonCard = new JButton();
+        buttonCard.setPreferredSize(new Dimension(lCard, hCard));
+        buttonCard.setOpaque(false);
+        sostituisciElemento(p_col, p_row, buttonCard);
+        repaintPanel();
+    }
 
-    public static void main(String[] args){
+    public void sostituisciElemento(int p_col, int p_row, JButton component) {
+        int indexToRemove = (p_row * nColonne + p_col);
+        this.gamePanel.remove(indexToRemove);
+
+        component.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
+
+        this.gamePanel.add(component, indexToRemove);
+    }
+
+    private void setPlayerBoxDetails(List<Player> playerList) {
+        player1TextArea = new JTextArea();
+        player1TextArea.append("Nickname: " + playerList.get(0).getNickname() + "\n");
+        player1TextArea.append("BoardCardDimension: " + playerList.get(0).getboardCardDimension());
+
+        player2TextArea = new JTextArea();
+        player2TextArea.append(playerList.get(1).getNickname());
+
+        if (playerList.size() >= 3) {
+            player3TextArea = new JTextArea();
+            player3TextArea.append(playerList.get(2).getNickname());
+        }
+
+        if (playerList.size() >= 4) {
+            player4TextArea = new JTextArea();
+            player4TextArea.append(playerList.get(3).getNickname());
+        }
+    }
+
+    private void stampaMatrice() {
+        for (int[] riga : matriceScacchiera2) {
+            for (int el : riga)
+                System.out.print(el);
+            System.out.print("\n");
+        }
+    }
+
+    private void repaintPanel() {
+        mainFrame.invalidate();
+        gamePanel.invalidate();
+        mainFrame.repaint();
+        gamePanel.repaint();
+        mainFrame.revalidate();
+        gamePanel.revalidate();
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        List<?> list = null;
+
+        if (arg instanceof List<?>)
+            list = (List<?>) arg;
+        else
+            throw new RuntimeException("Errore nel metodo Update, non è stata fornita una lista");
+
+        //Passato segnale 0 che corrisponde ad inizializzazione giocatori
+        if ((int) list.get(0) == 0) {
+            List<?> listaPlayer = (List<?>) list.get(1);
+            if (listaPlayer.get(0) instanceof Player) {
+
+                setPlayerBoxDetails((List<Player>) listaPlayer);
+                creaScacchiera((List<Player>) listaPlayer);
+            }
+
+            repaintPanel();
+        }
+
+        //Segnale 1: aggiornamento carta sul tavolo
+        // [0] int numero del segnale
+        // [1] Card
+        if ((int) list.get(0) == 1) {
+            if (list.get(1) instanceof Card) {
+                segnaleModificaCartaSulTavolo((Card) list.get(1));
+            }
+            repaintPanel();
+        }
+
+        //Segnale 2: Aggiorno carta pescata vicino a giocatore
+        if ((int) list.get(0) == 2) {
+            switch ((int) list.get(2)) {
+                case 0:
+                    segnaleModificaCartaVicinoGiocatore((Card) list.get(1), 1, 0);
+                    break;
+                case 1:
+                    segnaleModificaCartaVicinoGiocatore((Card) list.get(1), nColonne - 2, nRighe - 2);
+                    break;
+                case 2:
+                    segnaleModificaCartaVicinoGiocatore((Card) list.get(1), 0, nRighe - 2);
+                    break;
+                case 3:
+                    segnaleModificaCartaVicinoGiocatore((Card) list.get(1), nColonne - 1, 1);
+                    break;
+            }
+            repaintPanel();
+        }
+
+        //Segnale 3: Rimuovo carta pescata dal giocatore
+        //[0] Segnale
+        //[1] Giocatore
+        if ((int) list.get(0) == 3) {
+            switch ((int) list.get(1)) {
+                case 0:
+                    segnaleRimuoviCartaSpecifica(1, 0);
+                    break;
+                case 1:
+                    segnaleRimuoviCartaSpecifica(nColonne - 2, nRighe - 2);
+                    break;
+                case 2:
+                    segnaleRimuoviCartaSpecifica(0, nRighe - 2);
+                    break;
+                case 3:
+                    segnaleRimuoviCartaSpecifica(nColonne-1, 1);
+                    break;
+            }
+            repaintPanel();
+        }
+
+        //Segnale 4 metodo Repain Game panel
+        if ((int) list.get(0) == 4) {
+            //Reimposto scacchiera giocatori
+            impostaMatriceIniziale((List<Player>) list.get(1));
+            //Creo una panel di appoggio
+            MyPanel appGamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
+            appGamePanel.setLayout(new GridLayout(9, 9));
+            appGamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
+
+            composeGamePanelFromMatrix((List<Player>) list.get(1), appGamePanel);
+
+            //Rimuovo ed aggiungo il nuovo pannello
+            mainFrame.remove(this.gamePanel);
+
+
+            GridBagConstraints gbcAppPanel = new GridBagConstraints();
+            gbcAppPanel.weightx = 0.1;
+            gbcAppPanel.weighty = 0.1;
+            gbcAppPanel.gridx = 1;
+            gbcAppPanel.gridy = 1;
+
+            mainFrame.add(appGamePanel, gbcAppPanel);
+            this.gamePanel = appGamePanel;
+
+            ImageIcon deckImageIcon = new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/" +
+                    "iloveimg-resized/CartaCoperta.png");
+            JButton deckButton = new JButton(deckImageIcon);
+            sostituisciElemento(5, 4, deckButton);
+
+            //Ristampo il pannello
+            repaintPanel();
+        }
+
+        //Segnale 5 rimuovi carta sul tavolo
+        if ((int) list.get(0) == 5) {
+            segnaleRimuoviCartaSpecifica(3, 4);
+            repaintPanel();
+        }
+    }
+
+    public static void main(String[] args) {
 //        Player player1 = new Player("Andrea");
 //        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.ASSO));
 //        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DUE));

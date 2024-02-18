@@ -1,9 +1,6 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Scanner;
+import java.util.*;
 
 public class MatchManager extends Observable {
 
@@ -14,16 +11,15 @@ public class MatchManager extends Observable {
     int playerIndex;
     int numberOfPlayer;
 
-    public MatchManager(int numberOfPlayer){
-        this.numberOfPlayer = numberOfPlayer;
-        inizializzaGiocatori(numberOfPlayer);
-        inizializzaGioco();
+    public MatchManager() {
     }
 
-    public static void assegnaCarte(Player player, Deck gameDeck){
-        for(int i = 0; i < player.getboardCardDimension(); i++){
-            player.takeCardToBoard(gameDeck.giveCard());
-        }
+    public void avviaGioco() {
+        System.out.println("Inserisci numero giocatori");
+        Scanner scanner = new Scanner(System.in);
+        setNumberOfPlayer(scanner.nextInt());
+        inizializzaGiocatori();
+        inizializzaGioco();
     }
 
     //inizializzo il gioco di carte
@@ -42,34 +38,47 @@ public class MatchManager extends Observable {
             assegnaCarte(p, this.gameDeck);
         }
 
-        setChanged();
-        notifyObservers(playerList);
+        Card cartaGirata = this.gameDeck.giveCard();
 
         //Giro prima carta sul tavolo
-        discardedCards.addCard(this.gameDeck.giveCard());
+        discardedCards.addCard(cartaGirata);
+
+//        this.playerIndex = 0;
+
+        setChanged();
+        notifyObservers(Arrays.asList(0,playerList));
+
+        setChanged();
+        notifyObservers(Arrays.asList(1,cartaGirata));
 
     }
 
-    private void inizializzaGiocatori(int numberOfPlayer) {
+    public void inizializzaGiocatori() {
+        Scanner scanner2 = new Scanner(System.in);
         //Inizializzo lista giocatori
         playerList = new ArrayList<>();
         String nicknameApp;
-        Scanner scanner = new Scanner(System.in);
 
         //Inserisco Player Umano
         System.out.println("Inserisci nome del Player Umano");
-        //nicknameApp = scanner.nextLine();
-        nicknameApp = "Andrea";
+        nicknameApp = scanner2.nextLine();
+//        nicknameApp = "Andrea";
         playerList.add(new Player(nicknameApp));
+        nicknameApp = "";
 
         //Inserisco Player Computer
         for(int i = 1; i < numberOfPlayer; i++) {
-            nicknameApp = "";
-
             System.out.println("Inserisci nome del Player Computer");
-            //nicknameApp = scanner.nextLine();
-            nicknameApp = "Francesco";
+            nicknameApp = scanner2.nextLine();
+//            nicknameApp = "Francesco";
             playerList.add(new Player(nicknameApp));
+        }
+
+    }
+
+    public static void assegnaCarte(Player player, Deck gameDeck){
+        for(int i = 0; i < player.getboardCardDimension(); i++){
+            player.takeCardToBoard(gameDeck.giveCard());
         }
     }
 
@@ -98,14 +107,32 @@ public class MatchManager extends Observable {
             appCard = player.getBoardCards().get(randomIndex);
 
             if(!appCard.getFaceUp()) {
+                player.showCard();
+                System.out.print(" * Scambio: " + cardInHand + " con " + appCard + "  111" + "\n");
+                System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + (randomIndex + 1));
                 //posiziono la carta
                 player.getBoardCards().set(randomIndex, cardInHand);
+
+                cardInHand = appCard;
+                //Ristampo la scacchiera
+                setChanged();
+                notifyObservers(Arrays.asList(4, playerList));
+
+                //Aggiorno carta sul tavolo
+                setChanged();
+                notifyObservers(Arrays.asList(1,discardedCards.getLast()));
+
                 sostituito = true;
             }
         }
-        cardInHand = appCard;
+
+
+        //Aggiorno visualizzazione carta vicino a giocatore dal giocatore
+        setChanged();
+        notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
+
         //controllo termine partita
-        controlloTerminePartita(player);
+//        controlloTerminePartita(player);
     }
 
     private void movimentoUmanoTemporaneo(Player player){
@@ -143,16 +170,43 @@ public class MatchManager extends Observable {
         }
 
         cardInHand = this.gameDeck.giveCard();
+
         Card appCard = null;
         Player playerInRound = playerList.get(playerIndex);
+
+        //Aggiorno visualizzazione carta pescata dal giocatore
+        setChanged();
+        notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
+
+//        //Rimuovo visualizzazione carta a terra
+//        setChanged();
+//        notifyObservers(Arrays.asList(5));
+
+        System.out.println("********************************");
         System.out.println("Turno di: " + playerInRound.getNickname());
+        System.out.println(" * Carta pescata: " + cardInHand);
 
         do{
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             cardInHand.setFaceUpTrue();
             int cardInHandIndex = cardInHand.getRank().rankToValue() - 1;
 
             if(controlloCartaJackDonna(cardInHand)){
+                //Rimuovo visualizzazione carta pescata dal giocatore
+                setChanged();
+                notifyObservers(Arrays.asList(3, playerIndex));
+
                 discardedCards.addCard(cardInHand);
+                System.out.println(" * Scarto: " + cardInHand);
+
+                //Aggiorno visualizzazione scarto la carta e la posiziono sul tavolo
+                setChanged();
+                notifyObservers(Arrays.asList(1, cardInHand));
                 break;
             }
 
@@ -163,20 +217,32 @@ public class MatchManager extends Observable {
                     movimentoComputer(playerInRound);
 
                 playerInRound.reduceRemainingCards();
-                controlloTerminePartita(playerInRound);
+
+                if(controlloTerminePartita(playerInRound)){
+
+                    //Elimino carta visualizzata a terra
+                    setChanged();
+                    notifyObservers(Arrays.asList(5));
+                    break;
+                }
 
             }
 
             //se indice carta è maggiore di dimensione del board del giocatore e non è una WildCard
             else if(cardInHandIndex >= playerInRound.getboardCardDimension()){
                 discardedCards.addCard(cardInHand);
+                System.out.println(" * Scarto: " + cardInHand);
+
+                //Rimuovo visualizzazione carta pescata dal giocatore
+                setChanged();
+                notifyObservers(Arrays.asList(3, playerIndex));
                 break;
             }
 
             //Se la carta non è una figura
             else{
 
-                //controllo posizione già occupata
+                //controllo posizione già occupata\scoperta
                 if (playerInRound.getBoardCards().get(cardInHandIndex).getFaceUp()) {
 
                     //se occupata da Jolly o Re
@@ -186,47 +252,108 @@ public class MatchManager extends Observable {
                         appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
                         //sostituisco WildCard sul board con carta in mano
+                        playerInRound.showCard();
+                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
+                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
                         playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
-                        cardInHand = appCard;
 
-                        playerInRound.reduceRemainingCards();
-                        controlloTerminePartita(playerInRound);
+                        setChanged();
+                        notifyObservers(Arrays.asList(4, playerList));
+
+                        //Aggiorno carta sul tavolo
+                        setChanged();
+                        notifyObservers(Arrays.asList(1,discardedCards.getLast()));
+
+                        //Aggiorno visualizzazione carta vicino al giocatore
+                        cardInHand = appCard;
+                        setChanged();
+                        notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
+
+//                        playerInRound.reduceRemainingCards();
+
+                        if(controlloTerminePartita(playerInRound)){
+
+                            //Elimino carta visualizzata a terra
+                            setChanged();
+                            notifyObservers(Arrays.asList(5));
+                            break;
+                        }
                     }
 
                     //altrimenti
                     else{
                         discardedCards.addCard(cardInHand);
+                        System.out.println(" * Scarto: " + cardInHand);
+                        setChanged();
+                        notifyObservers(Arrays.asList(1,cardInHand));
                         break;
                     }
                 }
 
                 //se posizione non è occupata
                 else {
-                    //prendo in mano carta che era a terra
+                    //prendo in mano carta coperta
                     appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
                     //posiziono la carta
+                    playerInRound.showCard();
+                    System.out.println(" * Scambio: " + cardInHand + " con " +appCard + "  299");
+                    System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
                     playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
+
+                    //Aggiorno visualizzazione scacchiera giocatori
+                    setChanged();
+                    notifyObservers(Arrays.asList(4, playerList));
+
+                    //Aggiorno carta sul tavolo
+                    setChanged();
+                    notifyObservers(Arrays.asList(1,discardedCards.getLast()));
+
                     cardInHand = appCard;
+                    setChanged();
+                    notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
 
                     playerInRound.reduceRemainingCards();
-                    controlloTerminePartita(playerInRound);
+
+                    if(controlloTerminePartita(playerInRound)){
+
+                        //Elimino carta visualizzata a terra
+                        setChanged();
+                        notifyObservers(Arrays.asList(5));
+                        break;
+                    }
                 }
             }
 
         }while(true);
 
+        setChanged();
+        notifyObservers(Arrays.asList(3, playerIndex));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         calcolaTurno();
     }
 
-    public void controlloTerminePartita(Player player){
+    public boolean controlloTerminePartita(Player player){
         if(player.getRemainingCards() == 0) {
             System.out.println(player.getNickname() + ": *** JTrash ***");
             player.reduceBoardCardDimension();
+            this.playerIndex = -1;
             inizializzaGioco();
 
             for(Player p: this.playerList){
-                System.out.println(p.getNickname() + " " +p.getboardCardDimension());
+                System.out.println("Dimensione Board: " + p.getNickname() + " " +p.getboardCardDimension());
+            }
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
 
             if(player.getboardCardDimension() == 0) {
@@ -239,7 +366,12 @@ public class MatchManager extends Observable {
 
                 throw new RuntimeException("Gioco finito, ha vinto: " + player.getNickname());
             }
+            else
+                return true;
         }
+        else
+            return false;
+
     }
 
     public void calcolaTurno(){

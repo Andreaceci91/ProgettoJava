@@ -27,9 +27,12 @@ public class Player {
     }
 
     public void showCard(){
-        System.out.println(" ");
-        System.out.println("Carte in mano del player " + this.nickname);
-        this.boardCard.forEach(System.out::println);
+//        System.out.println(" ");
+//        System.out.println("Carte in mano del player " + this.nickname);
+//        this.boardCard.forEach(System.out::println);
+        for(Card c : this.boardCard ){
+            System.out.println(c + " " + c.getFaceUp());
+        }
     }
 
     public void showFirst(){ System.out.println(boardCard.getFirst()); }
@@ -59,8 +62,8 @@ public class Player {
     public int getRemainingCards(){return this.remainingCards;};
 
     public Card getCardFromIndex(int index){
-        System.out.println(" ");
-        System.out.println(this.boardCard.get(index-1));
+//        System.out.println(" ");
+//        System.out.println(this.boardCard.get(index-1));
         return this.boardCard.get(index-1);
     }
 

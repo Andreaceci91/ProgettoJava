@@ -1,21 +1,23 @@
 package controller;
 
 import model.MatchManager;
-import model.Player;
 import view.Scacchiera;
+import java.util.Scanner;
 
 public class ControlManager {
-    public static void main(String[] args){
+    public static void main(String[] args) throws InterruptedException {
 
-        System.out.println("ciao");
-
-        MatchManager matchManager = new MatchManager(4);
+        MatchManager matchManager = new MatchManager();
         Scacchiera scacchiera = new Scacchiera();
 
         matchManager.addObserver(scacchiera);
 
-//        do {
-//            matchManager.turnoDiGioco();
-//        }while(true);
+        matchManager.avviaGioco();
+
+        do {
+//            Thread.sleep(1000);
+            matchManager.turnoDiGioco();
+
+        }while(true);
     }
 }
