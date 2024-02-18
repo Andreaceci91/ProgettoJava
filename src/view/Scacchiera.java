@@ -61,18 +61,35 @@ public class Scacchiera implements Observer {
     }
 
     public void creaScacchiera(List<Player> listaPlayer) {
+        if(mainFrame != null)
+            mainFrame.remove(gamePanel);
+//        else
+//            //Di prova
+//            mainFrame = new MyFrame();
+
         gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
         gamePanel.setLayout(new GridLayout(9, 9));
         gamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
+//        //Di prova
+//        mainFrame.add(gamePanel);
+//        mainFrame.setVisible(true);
+//        repaintPanelFrame();
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        matriceScacchiera2 = new int[nRighe][nColonne];
 
         impostaMatriceIniziale(listaPlayer);
-        System.out.println("*****************************");
-        stampaMatrice();
-        System.out.println("*****************************");
+//        System.out.println("*****************************");
+//        stampaMatrice();
+//        System.out.println("*****************************");
         composeGamePanelFromMatrix(listaPlayer, gamePanel);
 
         if(mainFrame == null){
-            matriceScacchiera2 = new int[nRighe][nColonne];
+//            matriceScacchiera2 = new int[nRighe][nColonne];
             mainFrame = new MyFrame();
             mainFrame.setSize(new Dimension(1440, 900));
             mainFrame.setLayout(new GridBagLayout());
@@ -81,9 +98,10 @@ public class Scacchiera implements Observer {
 
             stampaMatrice();
             mainFrame.setVisible(true);
+            repaintPanelFrame();
         }
         else{
-            mainFrame.remove(gamePanel);
+            gamePanel.setOpaque(true);
             addingMainElementToFrame(mainFrame, gamePanel);
             repaintPanelFrame();
         }
@@ -107,7 +125,7 @@ public class Scacchiera implements Observer {
                     emptyButton.setBorder(BorderFactory.createLineBorder(Color.WHITE));
                     gamePanel.add(emptyButton);
                 } else {
-                    if (i <= 1) {
+                    if (i == 0 || i == 1) {
                         playerIndex = 0;
 
                         player = listaPlayer.get(playerIndex);
@@ -124,7 +142,7 @@ public class Scacchiera implements Observer {
 
                         gamePanel.add(cardButton);
                     }
-                    if (i >= matriceScacchiera2.length - 2) {
+                    if (i == matriceScacchiera2.length - 1 || i == matriceScacchiera2.length - 2) {
                         playerIndex = 1;
                         player = listaPlayer.get(playerIndex);
                         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
@@ -141,7 +159,8 @@ public class Scacchiera implements Observer {
                         gamePanel.add(cardButton);
                     }
 
-                    if (i >= 2 && j <= 1) {
+                    if (i > 1 && j <= 1) {
+                        System.out.println("player left");
                         playerIndex = 2;
                         player = listaPlayer.get(playerIndex);
                         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
@@ -158,7 +177,7 @@ public class Scacchiera implements Observer {
                         gamePanel.add(cardButton);
                     }
 
-                    if (i >= 2 && j >= matriceScacchiera2[0].length - 2) {
+                    if (i >= 1 && j >= matriceScacchiera2[0].length - 2) {
                         playerIndex = 3;
                         player = listaPlayer.get(playerIndex);
                         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
@@ -182,8 +201,6 @@ public class Scacchiera implements Observer {
                 "iloveimg-resized/CartaCoperta.png");
         JButton deckButton = new JButton(deckImageIcon);
         sostituisciElemento(5, 4, deckButton);
-
-
     }
 
     private void addingMainElementToFrame(MyFrame mainFrame, MyPanel gamePanel) {
@@ -334,8 +351,8 @@ public class Scacchiera implements Observer {
             nCol = 2;
 
         if (nCol == 1) {
-            for (int i = 3; i < 3 + numeroCartePlayer; i++) {
-                matriceScacchiera2[i][0] = indice++;
+            for (int i = 2; i < 2 + numeroCartePlayer; i++) {
+                matriceScacchiera2[i][1] = indice++;
             }
         }
 
