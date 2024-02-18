@@ -55,19 +55,12 @@ public class Scacchiera implements Observer {
     JTextArea player4TextArea = new JTextArea();
 
     MyPanel gamePanel;
-    MyPanel appPanel;
     MyFrame mainFrame;
 
     public Scacchiera() {
     }
 
     public void creaScacchiera(List<Player> listaPlayer) {
-        matriceScacchiera2 = new int[nRighe][nColonne];
-        mainFrame = new MyFrame();
-        mainFrame.setSize(new Dimension(1440, 900));
-        mainFrame.setLayout(new GridBagLayout());
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
         gamePanel.setLayout(new GridLayout(9, 9));
         gamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
@@ -78,10 +71,22 @@ public class Scacchiera implements Observer {
         System.out.println("*****************************");
         composeGamePanelFromMatrix(listaPlayer, gamePanel);
 
-        addingMainElementToFrame(mainFrame, gamePanel);
+        if(mainFrame == null){
+            matriceScacchiera2 = new int[nRighe][nColonne];
+            mainFrame = new MyFrame();
+            mainFrame.setSize(new Dimension(1440, 900));
+            mainFrame.setLayout(new GridBagLayout());
+            mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            addingMainElementToFrame(mainFrame, gamePanel);
 
-        stampaMatrice();
-        mainFrame.setVisible(true);
+            stampaMatrice();
+            mainFrame.setVisible(true);
+        }
+        else{
+            mainFrame.remove(gamePanel);
+            addingMainElementToFrame(mainFrame, gamePanel);
+            repaintPanelFrame();
+        }
     }
 
     private void composeGamePanelFromMatrix(List<Player> listaPlayer, MyPanel gamePanel) {
@@ -448,7 +453,7 @@ public class Scacchiera implements Observer {
         buttonCard.setPreferredSize(new Dimension(lCard, hCard));
         buttonCard.setOpaque(true);
         sostituisciElemento(p_col, p_row, buttonCard);
-        repaintPanel();
+        repaintPanelFrame();
 
     }
 
@@ -457,7 +462,7 @@ public class Scacchiera implements Observer {
         buttonCard.setPreferredSize(new Dimension(lCard, hCard));
         buttonCard.setOpaque(false);
         sostituisciElemento(p_col, p_row, buttonCard);
-        repaintPanel();
+        repaintPanelFrame();
     }
 
     public void sostituisciElemento(int p_col, int p_row, JButton component) {
@@ -496,7 +501,7 @@ public class Scacchiera implements Observer {
         }
     }
 
-    private void repaintPanel() {
+    private void repaintPanelFrame() {
         mainFrame.invalidate();
         gamePanel.invalidate();
         mainFrame.repaint();
@@ -523,7 +528,7 @@ public class Scacchiera implements Observer {
                 creaScacchiera((List<Player>) listaPlayer);
             }
 
-            repaintPanel();
+            repaintPanelFrame();
         }
 
         //Segnale 1: aggiornamento carta sul tavolo
@@ -533,7 +538,7 @@ public class Scacchiera implements Observer {
             if (list.get(1) instanceof Card) {
                 segnaleModificaCartaSulTavolo((Card) list.get(1));
             }
-            repaintPanel();
+            repaintPanelFrame();
         }
 
         //Segnale 2: Aggiorno carta pescata vicino a giocatore
@@ -552,7 +557,7 @@ public class Scacchiera implements Observer {
                     segnaleModificaCartaVicinoGiocatore((Card) list.get(1), nColonne - 1, 1);
                     break;
             }
-            repaintPanel();
+            repaintPanelFrame();
         }
 
         //Segnale 3: Rimuovo carta pescata dal giocatore
@@ -573,7 +578,7 @@ public class Scacchiera implements Observer {
                     segnaleRimuoviCartaSpecifica(nColonne-1, 1);
                     break;
             }
-            repaintPanel();
+            repaintPanelFrame();
         }
 
         //Segnale 4 metodo Repain Game panel
@@ -606,13 +611,13 @@ public class Scacchiera implements Observer {
             sostituisciElemento(5, 4, deckButton);
 
             //Ristampo il pannello
-            repaintPanel();
+            repaintPanelFrame();
         }
 
         //Segnale 5 rimuovi carta sul tavolo
         if ((int) list.get(0) == 5) {
             segnaleRimuoviCartaSpecifica(3, 4);
-            repaintPanel();
+            repaintPanelFrame();
         }
     }
 
