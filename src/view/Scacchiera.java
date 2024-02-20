@@ -113,74 +113,24 @@ public class Scacchiera implements Observer {
                 } else {
                     if (i == 0 || i == 1) {
                         playerIndex = 0;
-
-                        player = listaPlayer.get(playerIndex);
-                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
-
-                        if(playerCardVisionata.getFaceUp())
-                            pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
-                        else
-                            pathPlayerCardVisionata = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized/CartaCoperta.png";
-
-                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
-                        cardButton = new JButton(cardImageIcon);
-
-//                        if (playerCardVisionata.getFaceUp())
-//                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
-//                        else
-//                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
+                        cardButton = generazioneCarteGiocatori(listaPlayer, playerIndex, i, j);
                         gamePanel.add(cardButton);
                     }
                     if (i == matriceScacchiera2.length - 1 || i == matriceScacchiera2.length - 2) {
                         playerIndex = 1;
-                        player = listaPlayer.get(playerIndex);
-                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
-                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
-
-                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
-                        cardButton = new JButton(cardImageIcon);
-
-                        if (playerCardVisionata.getFaceUp())
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                        else
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
+                        cardButton = generazioneCarteGiocatori(listaPlayer, playerIndex, i, j);
                         gamePanel.add(cardButton);
                     }
 
                     if (i > 1 && j <= 1) {
-//                        System.out.println("player left");
                         playerIndex = 2;
-                        player = listaPlayer.get(playerIndex);
-                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
-                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
-
-                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
-                        cardButton = new JButton(cardImageIcon);
-
-                        if (playerCardVisionata.getFaceUp())
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                        else
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
+                        cardButton = generazioneCarteGiocatori(listaPlayer, playerIndex, i, j);
                         gamePanel.add(cardButton);
                     }
 
                     if (i >= 1 && j >= matriceScacchiera2[0].length - 2) {
                         playerIndex = 3;
-                        player = listaPlayer.get(playerIndex);
-                        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
-                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
-
-                        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
-                        cardButton = new JButton(cardImageIcon);
-
-                        if (playerCardVisionata.getFaceUp())
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                        else
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
+                        cardButton = generazioneCarteGiocatori(listaPlayer, playerIndex, i, j);
                         gamePanel.add(cardButton);
                     }
                 }
@@ -191,6 +141,26 @@ public class Scacchiera implements Observer {
                 "iloveimg-resized/CartaCoperta.png");
         JButton deckButton = new JButton(deckImageIcon);
         sostituisciElemento(5, 4, deckButton);
+    }
+
+    private JButton generazioneCarteGiocatori(List<Player> listaPlayer, int playerIndex, int i, int j) {
+        ImageIcon cardImageIcon;
+        JButton cardButton;
+        String pathPlayerCardVisionata;
+        Card playerCardVisionata;
+        Player player;
+        player = listaPlayer.get(playerIndex);
+        playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
+
+        if(playerCardVisionata.getFaceUp())
+            pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+        else
+            pathPlayerCardVisionata = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized/CartaCoperta.png";
+
+        cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
+        cardButton = new JButton(cardImageIcon);
+        cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        return cardButton;
     }
 
     private void addingMainElementToFrame(MyFrame mainFrame, MyPanel gamePanel) {
