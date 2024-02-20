@@ -139,6 +139,22 @@ public class Deck {
         return this.deck.getLast();
     }
 
+    public Card getSecondToLastCard(){
+        int deckDim = this.deck.size();
+
+        return this.deck.get(deckDim-1);
+    }
+    public Card getLastERemove(){
+        Card lastCard = this.deck.getLast();
+        this.deck.removeLast();
+
+        return lastCard;
+    }
+
+    public Boolean isEmpty(){
+        return this.deck.isEmpty();
+    }
+
     public static Deck mischiaMazzo(Deck cards){
         Collections.shuffle(cards.deck);
 

@@ -15,9 +15,10 @@ public class ControlManager {
         matchManager.avviaGioco();
 
         do {
-//            Thread.sleep(1000);
+            Thread.sleep(1500);
             matchManager.turnoDiGioco();
 
         }while(true);
+
     }
 }

@@ -63,33 +63,19 @@ public class Scacchiera implements Observer {
     public void creaScacchiera(List<Player> listaPlayer) {
         if(mainFrame != null)
             mainFrame.remove(gamePanel);
-//        else
-//            //Di prova
-//            mainFrame = new MyFrame();
 
         gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
         gamePanel.setLayout(new GridLayout(9, 9));
         gamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
-//        //Di prova
-//        mainFrame.add(gamePanel);
-//        mainFrame.setVisible(true);
-//        repaintPanelFrame();
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
 
         matriceScacchiera2 = new int[nRighe][nColonne];
 
+        setPlayerBoxDetails(listaPlayer, player1TextArea, player2TextArea, player3TextArea, player4TextArea);
         impostaMatriceIniziale(listaPlayer);
-//        System.out.println("*****************************");
-//        stampaMatrice();
-//        System.out.println("*****************************");
+
         composeGamePanelFromMatrix(listaPlayer, gamePanel);
 
         if(mainFrame == null){
-//            matriceScacchiera2 = new int[nRighe][nColonne];
             mainFrame = new MyFrame();
             mainFrame.setSize(new Dimension(1440, 900));
             mainFrame.setLayout(new GridBagLayout());
@@ -130,15 +116,19 @@ public class Scacchiera implements Observer {
 
                         player = listaPlayer.get(playerIndex);
                         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
-                        pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+
+                        if(playerCardVisionata.getFaceUp())
+                            pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
+                        else
+                            pathPlayerCardVisionata = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized/CartaCoperta.png";
 
                         cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
                         cardButton = new JButton(cardImageIcon);
 
-                        if (playerCardVisionata.getFaceUp())
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
-                        else
-                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+//                        if (playerCardVisionata.getFaceUp())
+//                            cardButton.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+//                        else
+//                            cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
                         gamePanel.add(cardButton);
                     }
@@ -160,7 +150,7 @@ public class Scacchiera implements Observer {
                     }
 
                     if (i > 1 && j <= 1) {
-                        System.out.println("player left");
+//                        System.out.println("player left");
                         playerIndex = 2;
                         player = listaPlayer.get(playerIndex);
                         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
@@ -282,7 +272,6 @@ public class Scacchiera implements Observer {
             normalizedCardSeed = Character.toUpperCase(cardSeed.charAt(0)) + cardSeed.substring(1);
         }
 
-        path = "";
         path = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized" +
                 "/" + normalizedCardSeed + normalizedCardRank + ".png";
 
@@ -290,7 +279,6 @@ public class Scacchiera implements Observer {
     }
 
     private void impostaMatriceIniziale(List<Player> listaPlayer) {
-
         impostaMatricePlayerUp(listaPlayer);
         impostaMatricePlayerDown(listaPlayer);
 
@@ -321,27 +309,17 @@ public class Scacchiera implements Observer {
             }
         }
 
-        if (nFileCarta == 2 && numeroCartePlayer % 2 == 0) {
-            for (int j = nColonne - 1; j >= nColonne - 2; j--) {
-                for (int i = 2; i < 2 + numeroCartePlayer / 2; i++) {
-                    matriceScacchiera2[i][j] = indice--;
-                }
-            }
-        }
-
-        if (nFileCarta == 2 && numeroCartePlayer % 2 != 0) {
-
-            for (int i = 2; i < 2 + numeroCartePlayer / 2; i++)
+        if(nFileCarta == 2){
+            for (int i = 2 + (10 - numeroCartePlayer); i < 7; i++)
                 matriceScacchiera2[i][nColonne - 1] = indice--;
 
-            for (int i = 2; i < 2 + numeroCartePlayer / 2 + 1; i++)
+            for (int i = 2 ; i < 7; i++)
                 matriceScacchiera2[i][nColonne - 2] = indice--;
         }
     }
 
     private void impostaMatricePlayerLeft(List<Player> listaPlayer) {
         int indice = 1;
-
         int nCol;
         int numeroCartePlayer = (listaPlayer.get(2)).getboardCardDimension();
 
@@ -351,25 +329,15 @@ public class Scacchiera implements Observer {
             nCol = 2;
 
         if (nCol == 1) {
-            for (int i = 2; i < 2 + numeroCartePlayer; i++) {
+            for (int i = 2; i < 2 + numeroCartePlayer; i++)
                 matriceScacchiera2[i][1] = indice++;
-            }
         }
 
-        if (nCol == 2 && numeroCartePlayer % 2 == 0) {
-            for (int j = 1; j >= 0; j--) {
-                for (int i = 2; i < 2 + numeroCartePlayer / 2; i++) {
-                    matriceScacchiera2[i][j] = indice++;
-                }
-            }
-        }
-
-        if (nCol == 2 && numeroCartePlayer % 2 != 0) {
-
-            for (int i = 2; i < 2 + numeroCartePlayer / 2 + 1; i++)
+        if (nCol == 2) {
+            for (int i = 2; i < 7; i++)
                 matriceScacchiera2[i][1] = indice++;
 
-            for (int i = 2; i < 2 + numeroCartePlayer / 2; i++)
+            for (int i = 2; i < 7 - (10 - numeroCartePlayer); i++)
                 matriceScacchiera2[i][0] = indice++;
         }
     }
@@ -390,26 +358,15 @@ public class Scacchiera implements Observer {
             }
         }
 
-        if (nFileCarte == 2 && numeroCartePlayer % 2 == 0) {
-            for (int i = 0; i < nFileCarte; i++) {
-                for (int j = 2; j < 2 + (numeroCartePlayer / 2); j++) {
-                    matriceScacchiera2[i][j] = indice--;
-                }
+        if (nFileCarte == 2) {
+            for (int j = 2 + (10 - numeroCartePlayer); j < 7; j++) {
+                matriceScacchiera2[0][j] = indice--;
+            }
+
+            for (int j = 2; j < 7; j++) {
+                matriceScacchiera2[1][j] = indice--;
             }
         }
-
-        if (nFileCarte == 2 && numeroCartePlayer % 2 != 0) {
-            for (int i = 0; i < nFileCarte; i++) {
-                if (i == 0) {
-                    for (int j = 2; j < 2 + numeroCartePlayer / 2; j++)
-                        matriceScacchiera2[i][j] = indice--;
-                } else {
-                    for (int j = 2; j < 2 + numeroCartePlayer / 2 + 1; j++)
-                        matriceScacchiera2[i][j] = indice--;
-                }
-            }
-        }
-
     }
 
     private void impostaMatricePlayerDown(List<Player> listaPlayer) {
@@ -424,33 +381,17 @@ public class Scacchiera implements Observer {
             nFileCarte = 2;
 
         if (nFileCarte == 1) {
-
             for (int j = 2; j < 2 + numeroCartePlayer; j++) {
                 matriceScacchiera2[nRighe - 2][j] = indice++;
             }
-
         }
 
-        //Pari
-        if (nFileCarte == 2 && numeroCartePlayer % 2 == 0) {
-            for (int i = nRighe - 2; i < nRighe - 2 + nFileCarte; i++) {
-                for (int j = 2; j < 2 + (numeroCartePlayer / 2); j++) {
-                    matriceScacchiera2[i][j] = indice++;
-                }
-            }
-        }
+        if (nFileCarte == 2) {
+            for (int j = 2; j < 7; j++)
+                matriceScacchiera2[nRighe - 2][j] = indice++;
 
-        //Dispari
-        if (nFileCarte == 2 && numeroCartePlayer % 2 != 0) {
-            for (int i = nRighe - 2; i < nRighe - 2 + nFileCarte; i++) {
-                if (i == nRighe - 2) {
-                    for (int j = 2; j < 2 + numeroCartePlayer / 2 + 1; j++)
-                        matriceScacchiera2[i][j] = indice++;
-                } else {
-                    for (int j = 2; j < 2 + numeroCartePlayer / 2; j++)
-                        matriceScacchiera2[i][j] = indice++;
-                }
-            }
+            for (int j = 2; j < 7 - (10 - numeroCartePlayer); j++)
+                matriceScacchiera2[nRighe - 1][j] = indice++;
         }
     }
 
@@ -491,22 +432,27 @@ public class Scacchiera implements Observer {
         this.gamePanel.add(component, indexToRemove);
     }
 
-    private void setPlayerBoxDetails(List<Player> playerList) {
-        player1TextArea = new JTextArea();
+    private void setPlayerBoxDetails(List<Player> playerList, JTextArea player1TextArea, JTextArea player2TextArea,
+                                     JTextArea player3TextArea, JTextArea player4TextArea) {
+
+        player1TextArea.setText("");
         player1TextArea.append("Nickname: " + playerList.get(0).getNickname() + "\n");
         player1TextArea.append("BoardCardDimension: " + playerList.get(0).getboardCardDimension());
 
-        player2TextArea = new JTextArea();
-        player2TextArea.append(playerList.get(1).getNickname());
+        player2TextArea.setText("");
+        player2TextArea.append("Nickname: " + playerList.get(1).getNickname() + "\n");
+        player2TextArea.append("BoardCardDimension: " + playerList.get(1).getboardCardDimension());
 
         if (playerList.size() >= 3) {
-            player3TextArea = new JTextArea();
-            player3TextArea.append(playerList.get(2).getNickname());
+            player3TextArea.setText("");
+            player3TextArea.append("Nickname: " + playerList.get(2).getNickname() + "\n");
+            player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension());
         }
 
         if (playerList.size() >= 4) {
-            player4TextArea = new JTextArea();
-            player4TextArea.append(playerList.get(3).getNickname());
+            player4TextArea.setText("");
+            player4TextArea.append("Nickname: " + playerList.get(3).getNickname() + "\n");
+            player4TextArea.append("BoardCardDimension: " + playerList.get(3).getboardCardDimension());
         }
     }
 
@@ -541,7 +487,7 @@ public class Scacchiera implements Observer {
             List<?> listaPlayer = (List<?>) list.get(1);
             if (listaPlayer.get(0) instanceof Player) {
 
-                setPlayerBoxDetails((List<Player>) listaPlayer);
+//                setPlayerBoxDetails((List<Player>) listaPlayer);
                 creaScacchiera((List<Player>) listaPlayer);
             }
 
