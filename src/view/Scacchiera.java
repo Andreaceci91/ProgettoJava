@@ -173,6 +173,7 @@ public class Scacchiera implements Observer {
                     if (i == 0 || i == 1) {
                         playerIndexMatrix = 0;
                         cardButton = (JButton) generazioneCarteGiocatori(listaPlayer, playerIndexMatrix, i, j);
+                        cardButton.addMouseListener(new PersonalMouseListeners.PescaBoardIndex(matriceScacchiera2[i][j]));
                         gamePanel.add(cardButton);
                     }
                     if (i == matriceScacchiera2.length - 1 || i == matriceScacchiera2.length - 2) {

@@ -12,7 +12,11 @@ public class MatchManager extends Observable {
     int playerIndex;
     int numberOfPlayer;
 
-    public Semaphore semaphore = new Semaphore(0);
+    private static boolean interactionOnDeck = true;
+    private static boolean interactionOnBoard = false;
+
+    public Semaphore semaphoreInteractionOnDeck = new Semaphore(0);
+    public Semaphore semaphoreInteractionOnBoard = new Semaphore(0);
 
     public MatchManager() {
     }
@@ -108,8 +112,8 @@ public class MatchManager extends Observable {
 
             if (!appCard.getFaceUp()) {
                 player.showCard();
-                System.out.print(" * Scambio: " + cardInHand + " con " + appCard + "  111" + "\n");
-                System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + (randomIndex + 1));
+//                System.out.print(" * Scambio: " + cardInHand + " con " + appCard + "  111" + "\n");
+//                System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + (randomIndex + 1));
 
                 //posiziono la carta
                 player.getBoardCards().set(randomIndex, cardInHand);
@@ -145,16 +149,21 @@ public class MatchManager extends Observable {
     }
 
     public void movimentoUmanoPescaTerra() {
-        cardInHand = discardedCards.getLastERemove();
-        System.out.println("Carta Pescata da terra: " + cardInHand);
-
-        semaphore.release();
+        if(interactionOnDeck == true){
+//            interactionOnDeck = false;
+            cardInHand = discardedCards.getLastERemove();
+            System.out.println("Carta Pescata da terra: " + cardInHand);
+            semaphoreInteractionOnDeck.release();
+        }
     }
 
     public void movimentoUmanoPescaMazzo(){
-        cardInHand = gameDeck.giveCard();
-        System.out.println("Carta pescata dal mazzo: " + cardInHand);
-        semaphore.release();
+        if(interactionOnDeck == true) {
+//            interactionOnDeck = false;
+            cardInHand = gameDeck.giveCard();
+            System.out.println("Carta pescata dal mazzo: " + cardInHand);
+            semaphoreInteractionOnDeck.release();
+        }
     }
 
     public void turnoDiGioco() {
@@ -162,7 +171,7 @@ public class MatchManager extends Observable {
         System.out.println("********************************");
         if (playerIndex != -1) {
             System.out.println("Turno di: " + playerList.get(playerIndex).getNickname());
-            System.out.println(" * Carta pescata: " + cardInHand);
+            System.out.println(" * Carta coperta: " + cardInHand);
         }
 
         //Visualizzazione pedina
@@ -189,7 +198,10 @@ public class MatchManager extends Observable {
             System.out.println(gameDeck.getFirst());
 
             try {
-                semaphore.acquire();
+                interactionOnDeck = true;
+                semaphoreInteractionOnDeck.acquire();
+                interactionOnDeck = false;
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -264,13 +276,21 @@ public class MatchManager extends Observable {
 
                 break;
 
+            //Controllo se la carta in mano è una WildCard
             } else if (controlloCartaJollyRe(cardInHand)) {
                 if (playerIndex != 0)
                     movimentoComputer(playerInRound);
                 else {
-                    movimentoComputer(playerInRound);
+                    interactionOnBoard = true;
+                    try {
+                        semaphoreInteractionOnBoard.acquire();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    interactionOnBoard = false;
                 }
 
+                sleep(500);
                 playerInRound.reduceRemainingCards();
 
                 if (controlloTerminePartita(playerInRound)) {
@@ -310,9 +330,9 @@ public class MatchManager extends Observable {
 
 //                       Stampe
                         //sostituisco WildCard sul board con carta in mano
-//                        playerInRound.showCard();
-//                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
-//                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
+                        playerInRound.showCard();
+                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
+                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
                         playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
 
                         setChanged();
@@ -500,4 +520,22 @@ public class MatchManager extends Observable {
         this.numberOfPlayer = numberOfPlayer;
     }
 
+    public void movimentoUmanoPescaBoardIndex(int cardIndex) {
+
+        if(interactionOnBoard == true) {
+            boolean scambiato = false;
+            System.out.println("Sto scambiando una carta");
+            while(!scambiato){
+                if(playerList.get(playerIndex).getBoardCards().get(cardIndex-1).getFaceUp() == false){
+                    Card app = playerList.get(playerIndex).getBoardCards().get(cardIndex-1);
+                    playerList.get(playerIndex).getBoardCards().set(cardIndex-1,cardInHand);
+                    cardInHand = app;
+                    scambiato = true;
+                    semaphoreInteractionOnBoard.release();
+                }
+            }
+
+        }
+
+    }
 }
