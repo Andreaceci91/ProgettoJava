@@ -138,6 +138,9 @@ public class Deck {
     public Card getLast(){
         return this.deck.getLast();
     }
+    public Card getFirst(){
+        return this.deck.getFirst();
+    }
 
     public Card getSecondToLastCard(){
         int deckDim = this.deck.size();
