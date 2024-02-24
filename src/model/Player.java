@@ -17,7 +17,7 @@ public class Player {
 
     public Player(String nickname){
         this.nickname = nickname;
-        this.boardCardDimension = 10;
+        this.boardCardDimension = 2;
         boardCard = new ArrayList<>();
         this.remainingCards = this.boardCardDimension;
     }
@@ -57,9 +57,18 @@ public class Player {
         return this.boardCardDimension;
     }
 
+    //Metodi Setter
+    public void setPartiteVinte(int nPartiteVinte){
+        this.partiteVinte = nPartiteVinte;
+    }
+
     public  List<Card> getBoardCards(){return this.boardCard;}
 
     public int getRemainingCards(){return this.remainingCards;};
+
+    public int getPartiteVinte(){
+        return this.partiteVinte;
+    }
 
     public Card getCardFromIndex(int index){
 //        System.out.println(" ");

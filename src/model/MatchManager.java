@@ -1,5 +1,7 @@
 package model;
 
+import javax.swing.*;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
@@ -11,6 +13,11 @@ public class MatchManager extends Observable {
     Card cardInHand;
     int playerIndex;
     int numberOfPlayer;
+    String giocatoriPath = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/Giocatori.txt";
+
+    List<Player> winnerPlayerList;
+    int firtPlayerIndexWinner;
+    boolean ultimoGiro;
 
     private static boolean interactionOnDeck = true;
     private static boolean interactionOnBoard = false;
@@ -34,6 +41,11 @@ public class MatchManager extends Observable {
         //genero un gamedeck
         this.gameDeck = new Deck(numberOfPlayer);
         this.discardedCards = new Deck();
+
+        this.winnerPlayerList = new ArrayList<>();
+
+        firtPlayerIndexWinner = -1;
+        ultimoGiro = false;
 
         for (Player p : playerList) {
             p.initializeBoardCard();
@@ -78,9 +90,30 @@ public class MatchManager extends Observable {
             playerList.add(new Player(nicknameApp));
         }
 
+        try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
+            String line;
+            while((line = br.readLine()) != null){
+                String[] statisticPlayer = line.split(" ");
+
+                String nomePlayer = statisticPlayer[0];
+                int lvPlayer = Integer.parseInt(statisticPlayer[1]);
+
+                for(Player p: playerList){
+                    if(p.getNickname().equals(nomePlayer))
+                        p.setPartiteVinte(lvPlayer);
+                }
+
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static void assegnaCarte(Player player, Deck gameDeck) {
+
+        public static void assegnaCarte(Player player, Deck gameDeck) {
         for (int i = 0; i < player.getboardCardDimension(); i++) {
             player.takeCardToBoard(gameDeck.giveCard());
         }
@@ -167,6 +200,17 @@ public class MatchManager extends Observable {
     }
 
     public void turnoDiGioco() {
+
+        if(ultimoGiro == true && playerIndex == firtPlayerIndexWinner) {
+            System.out.println("Sono qui");
+            if (termineRoundOTermineGioco() == true) {
+                throw new RuntimeException("Gioco Terminato");
+            } else {
+                //Elimino carta visualizzata a terra
+                setChanged();
+                notifyObservers(Arrays.asList(5));
+            }
+        }
 
         System.out.println("********************************");
         if (playerIndex != -1) {
@@ -282,21 +326,25 @@ public class MatchManager extends Observable {
                     movimentoComputer(playerInRound);
                 else {
                     interactionOnBoard = true;
+
                     try {
                         semaphoreInteractionOnBoard.acquire();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+
                     interactionOnBoard = false;
                 }
 
                 sleep(500);
                 playerInRound.reduceRemainingCards();
 
-                if (controlloTerminePartita(playerInRound)) {
-                    //Elimino carta visualizzata a terra
+                if (controlloJtrash()) {
+                    //Rimuovo visualizzazione carta pescata dal giocatore
                     setChanged();
-                    notifyObservers(Arrays.asList(5));
+                    notifyObservers(Arrays.asList(3, playerIndex));
+                    System.out.println(" * Scarto: " + cardInHand);
+                    discardedCards.addCard(cardInHand);
                     break;
                 }
             }
@@ -355,10 +403,12 @@ public class MatchManager extends Observable {
 
 //                        playerInRound.reduceRemainingCards();
 
-                        if (controlloTerminePartita(playerInRound)) {
-                            //Elimino carta visualizzata a terra
+                        if (controlloJtrash()) {
+                            //Rimuovo visualizzazione carta pescata dal giocatore
                             setChanged();
-                            notifyObservers(Arrays.asList(5));
+                            notifyObservers(Arrays.asList(3, playerIndex));
+                            System.out.println(" * Scarto: " + cardInHand);
+                            discardedCards.addCard(cardInHand);
                             break;
                         }
                     }
@@ -409,10 +459,13 @@ public class MatchManager extends Observable {
 
                     playerInRound.reduceRemainingCards();
 
-                    if (controlloTerminePartita(playerInRound)) {
-                        //Elimino carta visualizzata a terra
+                    if (controlloJtrash()) {
+                        //Rimuovo visualizzazione carta pescata dal giocatore
                         setChanged();
-                        notifyObservers(Arrays.asList(5));
+                        notifyObservers(Arrays.asList(3, playerIndex));
+                        System.out.println(" * Scarto: " + cardInHand);
+
+                        discardedCards.addCard(cardInHand);
                         break;
                     }
                 }
@@ -442,29 +495,48 @@ public class MatchManager extends Observable {
         }
     }
 
-    public boolean controlloTerminePartita(Player player) {
-        if (player.getRemainingCards() == 0) {
-            System.out.println(player.getNickname() + ": *** JTrash ***");
-            player.reduceBoardCardDimension();
-            this.playerIndex = -1;
-            inizializzaGioco();
+    public boolean termineRoundOTermineGioco() {
+        boolean giocoFinito = false;
 
-            for (Player p : this.playerList) {
-                System.out.println("Dimensione Board: " + p.getNickname() + " " + p.getboardCardDimension());
+        for(Player p: winnerPlayerList)
+            p.reduceBoardCardDimension();
+
+        for (Player p : this.playerList) {
+            System.out.println("Dimensione Board: " + p.getNickname() + " " + p.getboardCardDimension());
+        }
+
+        for(Player p: winnerPlayerList){
+            if (p.getboardCardDimension() == 0) {
+                giocoFinito = true;
+                p.incrementaPartiteVinte();
+                System.out.println("Gioco terminato da: " + p.getNickname());
+            }
+        }
+
+        this.playerIndex = 0;
+        inizializzaGioco();
+
+        if(giocoFinito)
+            return true;
+        else
+            return false;
+    }
+
+    private boolean controlloJtrash() {
+        if (playerList.get(playerIndex).getRemainingCards() == 0) {
+            System.out.println(playerList.get(playerIndex).getNickname() + ": *** JTrash ***");
+
+            if (ultimoGiro == false){
+                firtPlayerIndexWinner = playerIndex;
+                ultimoGiro = true;
+                System.out.println("ULTIMOOOOO GIROOOOOOOOO");
             }
 
-            if (player.getboardCardDimension() == 0) {
-                player.incrementaPartiteVinte();
+            winnerPlayerList.add(playerList.get(playerIndex));
 
-                for (Player p : this.playerList) {
-                    if (p != player)
-                        p.incrementaPartitePerse();
-                }
-
-                throw new RuntimeException("Gioco finito, ha vinto: " + player.getNickname());
-            } else
-                return true;
-        } else
+            return true;
+        }
+        else
             return false;
     }
 
@@ -523,19 +595,17 @@ public class MatchManager extends Observable {
     public void movimentoUmanoPescaBoardIndex(int cardIndex) {
 
         if(interactionOnBoard == true) {
-            boolean scambiato = false;
             System.out.println("Sto scambiando una carta");
-            while(!scambiato){
-                if(playerList.get(playerIndex).getBoardCards().get(cardIndex-1).getFaceUp() == false){
-                    Card app = playerList.get(playerIndex).getBoardCards().get(cardIndex-1);
-                    playerList.get(playerIndex).getBoardCards().set(cardIndex-1,cardInHand);
-                    cardInHand = app;
-                    scambiato = true;
-                    semaphoreInteractionOnBoard.release();
+
+            if(playerList.get(playerIndex).getBoardCards().get(cardIndex-1).getFaceUp() == false){
+                Card app = playerList.get(playerIndex).getBoardCards().get(cardIndex-1);
+                playerList.get(playerIndex).getBoardCards().set(cardIndex-1,cardInHand);
+                cardInHand = app;
+                semaphoreInteractionOnBoard.release();
                 }
             }
 
         }
 
-    }
 }
+

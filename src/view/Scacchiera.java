@@ -596,22 +596,26 @@ public class Scacchiera implements Observer {
 
         player1TextArea.setText("");
         player1TextArea.append("Nickname: " + playerList.get(0).getNickname() + "\n");
-        player1TextArea.append("BoardCardDimension: " + playerList.get(0).getboardCardDimension());
+        player1TextArea.append("BoardCardDimension: " + playerList.get(0).getboardCardDimension() + "\n");
+        player1TextArea.append("Lv: " + playerList.get(0).getPartiteVinte());
 
         player2TextArea.setText("");
         player2TextArea.append("Nickname: " + playerList.get(1).getNickname() + "\n");
-        player2TextArea.append("BoardCardDimension: " + playerList.get(1).getboardCardDimension());
+        player2TextArea.append("BoardCardDimension: " + playerList.get(1).getboardCardDimension() + "\n");
+        player2TextArea.append("Lv: " + playerList.get(1).getPartiteVinte());
 
         if (playerList.size() >= 3) {
             player3TextArea.setText("");
             player3TextArea.append("Nickname: " + playerList.get(2).getNickname() + "\n");
-            player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension());
+            player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension() +"\n");
+            player3TextArea.append("Lv: " + playerList.get(3).getPartiteVinte());
         }
 
         if (playerList.size() >= 4) {
             player4TextArea.setText("");
             player4TextArea.append("Nickname: " + playerList.get(3).getNickname() + "\n");
-            player4TextArea.append("BoardCardDimension: " + playerList.get(3).getboardCardDimension());
+            player4TextArea.append("BoardCardDimension: " + playerList.get(3).getboardCardDimension() + "\n");
+            player4TextArea.append("Lv: " + playerList.get(3).getPartiteVinte());
         }
     }
 
