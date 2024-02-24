@@ -93,4 +93,14 @@ public class PersonalMouseListeners implements MouseListener, Observer {
             ApplicazionManager.modelInstance.movimentoUmanoPescaBoardIndex(cardIndex);
         }
     }
+
+    public static class AvviaGioco extends PersonalMouseListeners{
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            System.out.println("Click ********************************** Gioco Avviato");
+            ApplicazionManager.modelInstance.comandoAvviaGioco();
+        }
+    }
+
 }

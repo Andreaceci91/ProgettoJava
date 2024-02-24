@@ -56,15 +56,45 @@ public class Scacchiera implements Observer {
     JTextArea player3TextArea = new JTextArea();
     JTextArea player4TextArea = new JTextArea();
 
+    MyPanel schermataInizialePanel;
+    GridBagConstraints gbcStartGameButton;
+    JLabel trashLabel;
+    JButton startGameButton;
+
     MyPanel gamePanel;
     MyFrame mainFrame;
 
     public Scacchiera() {
     }
 
-    public void creaScacchiera(List<Player> listaPlayer, int playerIndex, Deck discardedCards) {
-        if(mainFrame != null)
+    public void creaScacchiera2(List<Player> listaPlayer, int playerIndex, Deck discardedCards) {
+        if (gamePanel != null)
             mainFrame.remove(gamePanel);
+        else{
+            //Setto Mainframe prima volta
+            mainFrame.remove(schermataInizialePanel);
+            mainFrame.setLayout(new GridBagLayout());
+        }
+
+
+        gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
+        gamePanel.setLayout(new GridLayout(9, 9));
+        gamePanel.setPreferredSize(new Dimension(widthPanel, heightPanel));
+
+        matriceScacchiera2 = new int[nRighe][nColonne];
+        impostaMatriceIniziale(listaPlayer);
+
+        composeGamePanelFromMatrix(listaPlayer, gamePanel, playerIndex, discardedCards);
+        addingMainElementToFrame(mainFrame, gamePanel);
+        setPlayerBoxDetails(listaPlayer, player1TextArea, player2TextArea, player3TextArea, player4TextArea);
+        repaintPanelFrame();
+    }
+
+    public void creaScacchiera(List<Player> listaPlayer, int playerIndex, Deck discardedCards) {
+        if (mainFrame != null) {
+            if (gamePanel != null)
+                mainFrame.remove(gamePanel);
+        }
 
         gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
         gamePanel.setLayout(new GridLayout(9, 9));
@@ -77,7 +107,7 @@ public class Scacchiera implements Observer {
 
 //        composeGamePanelFromMatrix(listaPlayer, gamePanel, playerIndex);
 
-        if(mainFrame == null){
+        if (mainFrame == null) {
             mainFrame = new MyFrame();
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setLayout(new GridBagLayout());
@@ -89,8 +119,7 @@ public class Scacchiera implements Observer {
             mainFrame.setVisible(true);
 
             repaintPanelFrame();
-        }
-        else{
+        } else {
 //            gamePanel.setOpaque(true);
             composeGamePanelFromMatrix(listaPlayer, gamePanel, playerIndex, discardedCards);
             addingMainElementToFrame(mainFrame, gamePanel);
@@ -202,14 +231,13 @@ public class Scacchiera implements Observer {
         ImageIcon deckImageIcon = new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/" + "iloveimg-resized/CartaCoperta.png");
 
 
-        if(playerIndex == 0) {
+        if (playerIndex == 0) {
             JButton deckButton = new JButton(deckImageIcon);
             //APPROFONDIRE
 //            deckButton.addMouseListener(new PescaMazzoListener());
             deckButton.addMouseListener(new PersonalMouseListeners.PescaMazzoListeners());
             sostituisciElemento(5, 4, deckButton, gamePanel);
-        }
-        else{
+        } else {
             JLabel deckLabel = new JLabel(deckImageIcon);
             sostituisciElemento(5, 4, deckLabel, gamePanel);
         }
@@ -221,21 +249,21 @@ public class Scacchiera implements Observer {
         JLabel tokenButton = new JLabel(tokenImage);
 //            tokenButton.setOpaque(true);
 
-        switch (playerIndex){
+        switch (playerIndex) {
             case -1:
-                sostituisciElemento(4,2, tokenButton, gamePanel);
+                sostituisciElemento(4, 2, tokenButton, gamePanel);
                 break;
             case 0:
-                sostituisciElemento(4,2, tokenButton, gamePanel);
+                sostituisciElemento(4, 2, tokenButton, gamePanel);
                 break;
             case 1:
-                sostituisciElemento(4,nRighe-3, tokenButton, gamePanel);
+                sostituisciElemento(4, nRighe - 3, tokenButton, gamePanel);
                 break;
             case 2:
-                sostituisciElemento(2,4, tokenButton, gamePanel);
+                sostituisciElemento(2, 4, tokenButton, gamePanel);
                 break;
             case 3:
-                sostituisciElemento(nColonne-3,4, tokenButton, gamePanel);
+                sostituisciElemento(nColonne - 3, 4, tokenButton, gamePanel);
                 break;
         }
 
@@ -276,10 +304,9 @@ public class Scacchiera implements Observer {
 //        repaintPanelFrame();
 
         //Visualizzazione carte scartate
-        if(discardedCards.isEmpty()){
-            sostituisciElemento(3,4, new JLabel(), gamePanel);
-        }
-        else{
+        if (discardedCards.isEmpty()) {
+            sostituisciElemento(3, 4, new JLabel(), gamePanel);
+        } else {
             Card lastCardDiscarded = discardedCards.getLast();
             String pathDiscardedCars = getStringPathFromCard(lastCardDiscarded);
             ImageIcon imgDiscardedCards = new ImageIcon(pathDiscardedCars);
@@ -296,13 +323,12 @@ public class Scacchiera implements Observer {
 
         //Inserimento JButton\JLabel come mazzo
 
-        if(playerIndex == 0) {
+        if (playerIndex == 0) {
             JButton deckButton = new JButton(deckImageIcon);
 //            deckButton.addMouseListener(new PescaMazzoListener());
             deckButton.addMouseListener(new PersonalMouseListeners.PescaMazzoListeners());
             sostituisciElemento(5, 4, deckButton, gamePanel);
-        }
-        else{
+        } else {
             JLabel deckLabel = new JLabel(deckImageIcon);
             sostituisciElemento(5, 4, deckLabel, gamePanel);
         }
@@ -318,19 +344,18 @@ public class Scacchiera implements Observer {
         Player player = listaPlayer.get(playerIndex);
         playerCardVisionata = player.getCardFromIndex(matriceScacchiera2[i][j]);
 
-        if(playerCardVisionata.getFaceUp())
+        if (playerCardVisionata.getFaceUp())
             pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
         else
             pathPlayerCardVisionata = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized/CartaCoperta.png";
 
         cardImageIcon = new ImageIcon(pathPlayerCardVisionata);
-        if(playerIndex == 0) {
+        if (playerIndex == 0) {
             cardButton = new JButton(cardImageIcon);
             cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 //        cardButton.addMouseListener();
             return cardButton;
-        }
-        else{
+        } else {
             cardLabel = new JLabel(cardImageIcon);
             cardLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             return cardLabel;
@@ -453,11 +478,11 @@ public class Scacchiera implements Observer {
             }
         }
 
-        if(nFileCarta == 2){
+        if (nFileCarta == 2) {
             for (int i = 2 + (10 - numeroCartePlayer); i < 7; i++)
                 matriceScacchiera2[i][nColonne - 1] = indice--;
 
-            for (int i = 2 ; i < 7; i++)
+            for (int i = 2; i < 7; i++)
                 matriceScacchiera2[i][nColonne - 2] = indice--;
         }
     }
@@ -544,12 +569,12 @@ public class Scacchiera implements Observer {
         ImageIcon imageIcon = new ImageIcon(path);
 
 //        if(playerIndex == 0) {
-            JButton buttonCard = new JButton(imageIcon);
-            buttonCard.setPreferredSize(new Dimension(lCard, hCard));
+        JButton buttonCard = new JButton(imageIcon);
+        buttonCard.setPreferredSize(new Dimension(lCard, hCard));
 //            buttonCard.setOpaque(true);
 //            buttonCard.addMouseListener(new PescaMazzoListener());
-            buttonCard.addMouseListener(new PersonalMouseListeners.PescaMazzoListeners());
-            sostituisciElemento(3, 4, buttonCard, this.gamePanel);
+        buttonCard.addMouseListener(new PersonalMouseListeners.PescaMazzoListeners());
+        sostituisciElemento(3, 4, buttonCard, this.gamePanel);
 //        }
 //        else{
 //            JLabel labelCard = new JLabel(imageIcon);
@@ -584,8 +609,8 @@ public class Scacchiera implements Observer {
 
 //        component.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
 
-        if(component instanceof JPanel)
-            gamePanel.add((JPanel)component, indexToRemove);
+        if (component instanceof JPanel)
+            gamePanel.add((JPanel) component, indexToRemove);
         else
             gamePanel.add(component, indexToRemove);
 
@@ -607,7 +632,7 @@ public class Scacchiera implements Observer {
         if (playerList.size() >= 3) {
             player3TextArea.setText("");
             player3TextArea.append("Nickname: " + playerList.get(2).getNickname() + "\n");
-            player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension() +"\n");
+            player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension() + "\n");
             player3TextArea.append("Lv: " + playerList.get(3).getPartiteVinte());
         }
 
@@ -645,14 +670,33 @@ public class Scacchiera implements Observer {
         else
             throw new RuntimeException("Errore nel metodo Update, non è stata fornita una lista");
 
+        //Passato segnale 9 che corrisponde ad inizializzazione giocatori
+        if ((int) list.get(0) == 9) {
+            new SchermataIniziale();
+//            repaintPanelFrame();
+        }
+
+        //Passato segnale 99 che corrisponde ad inizializzazione giocatori
+        if ((int) list.get(0) == 99) {
+            SchermataIniziale.setInterrompiCiclo();
+//            mainFrame.remove(schermataInizialePanel);
+
+//            mainFrame = null;
+//            return;
+        }
+
         //Passato segnale 0 che corrisponde ad inizializzazione giocatori
         if ((int) list.get(0) == 0) {
             List<?> listaPlayer = (List<?>) list.get(1);
             if (listaPlayer.get(0) instanceof Player) {
-                int playerIndex = (int)list.get(2);
+                int playerIndex = (int) list.get(2);
                 Deck discardedCards = ((Deck) list.get(3));
 //                setPlayerBoxDetails((List<Player>) listaPlayer);
-                creaScacchiera((List<Player>) listaPlayer, playerIndex, discardedCards);
+//                new SchermataIniziale();
+
+//                mainFrame.remove(schermataInizialePanel);
+//                mainFrame = null;
+                creaScacchiera2((List<Player>) listaPlayer, playerIndex, discardedCards);
             }
 
             repaintPanelFrame();
@@ -663,7 +707,7 @@ public class Scacchiera implements Observer {
         // [1] Card
         if ((int) list.get(0) == 1) {
             if (list.get(1) instanceof Card) {
-                int playerIndex = (int)list.get(2);
+                int playerIndex = (int) list.get(2);
                 segnaleModificaCartaSulTavolo((Card) list.get(1), playerIndex);
             }
             repaintPanelFrame();
@@ -696,7 +740,7 @@ public class Scacchiera implements Observer {
             switch ((int) list.get(1)) {
                 case 0:
                     segnaleRimuoviCartaSpecifica(1, 0);
-                    sostituisciElemento(1, 0,  emptyLabel, this.gamePanel);
+                    sostituisciElemento(1, 0, emptyLabel, this.gamePanel);
                     break;
                 case 1:
                     segnaleRimuoviCartaSpecifica(nColonne - 2, nRighe - 2);
@@ -718,7 +762,7 @@ public class Scacchiera implements Observer {
         if ((int) list.get(0) == 4) {
             //Reimposto scacchiera giocatori
             impostaMatriceIniziale((List<Player>) list.get(1));
-            int playerIndex = (int)list.get(2);
+            int playerIndex = (int) list.get(2);
             Deck discardedCards = (Deck) list.get(3);
 
             //Creo una panel di appoggio
@@ -755,7 +799,6 @@ public class Scacchiera implements Observer {
 //            }
 
 
-
             //Ristampo il pannello
             repaintPanelFrame();
         }
@@ -770,106 +813,115 @@ public class Scacchiera implements Observer {
         //Segnale 6: Inserimento pedina giocatore in turno
         //[0] Tipo Segnale
         //[1] Giocatore in turno
-        if((int) list.get(0) == 6){
-            int playerIndex = (int)list.get(1);
+        if ((int) list.get(0) == 6) {
+            int playerIndex = (int) list.get(1);
 
             String tokenPath = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/iloveimg-resized/monedaOro60.png";
             ImageIcon tokenImage = new ImageIcon(tokenPath);
             JLabel tokenButton = new JLabel(tokenImage);
 //            tokenButton.setOpaque(true);
 
-            switch (playerIndex){
+            switch (playerIndex) {
                 case 0:
-                    sostituisciElemento(4,2, tokenButton, this.gamePanel);
+                    sostituisciElemento(4, 2, tokenButton, this.gamePanel);
                     break;
                 case 1:
-                    sostituisciElemento(4,nRighe-3, tokenButton, this.gamePanel);
+                    sostituisciElemento(4, nRighe - 3, tokenButton, this.gamePanel);
                     break;
                 case 2:
-                    sostituisciElemento(2,4, tokenButton, this.gamePanel);
+                    sostituisciElemento(2, 4, tokenButton, this.gamePanel);
                     break;
                 case 3:
-                    sostituisciElemento(nColonne-3,4, tokenButton, this.gamePanel);
+                    sostituisciElemento(nColonne - 3, 4, tokenButton, this.gamePanel);
                     break;
             }
             repaintPanelFrame();
         }
 
-        if((int) list.get(0) == 7){
-            int playerIndex = (int)list.get(1);
+        if ((int) list.get(0) == 7) {
+            int playerIndex = (int) list.get(1);
 
-            switch (playerIndex){
+            switch (playerIndex) {
                 case 0:
-                    segnaleRimuoviCartaSpecifica(4,2);
-                    sostituisciElemento(4,2, new JLabel(), this.gamePanel);
+                    segnaleRimuoviCartaSpecifica(4, 2);
+                    sostituisciElemento(4, 2, new JLabel(), this.gamePanel);
                     break;
                 case 1:
-                    segnaleRimuoviCartaSpecifica(4,nRighe-3);
-                    sostituisciElemento(4,nRighe-3, new JLabel(), this.gamePanel);
+                    segnaleRimuoviCartaSpecifica(4, nRighe - 3);
+                    sostituisciElemento(4, nRighe - 3, new JLabel(), this.gamePanel);
                     break;
                 case 2:
-                    segnaleRimuoviCartaSpecifica(2,4);
-                    sostituisciElemento(2,4, new JLabel(), this.gamePanel);
+                    segnaleRimuoviCartaSpecifica(2, 4);
+                    sostituisciElemento(2, 4, new JLabel(), this.gamePanel);
                     break;
                 case 3:
-                    segnaleRimuoviCartaSpecifica(nColonne-3,4);
-                    sostituisciElemento(nColonne-3,4, new JLabel(), this.gamePanel);
+                    segnaleRimuoviCartaSpecifica(nColonne - 3, 4);
+                    sostituisciElemento(nColonne - 3, 4, new JLabel(), this.gamePanel);
                     break;
             }
             repaintPanelFrame();
         }
     }
 
-    public static void main(String[] args) {
-//        Player player1 = new Player("Andrea");
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.ASSO));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DUE));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.TRE));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.QUATTRO));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.CINQUE));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SEI));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.SETTE));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.OTTO));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.NOVE));
-//        player1.takeCardToBoard(new Card(CardSeed.FIORI, CardRank.DIECI));
-//
-//        Player player2 = new Player("Francesco");
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.ASSO));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DUE));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.TRE));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.QUATTRO));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.CINQUE));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SEI));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.SETTE));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.OTTO));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.NOVE));
-//        player2.takeCardToBoard(new Card(CardSeed.QUADRI, CardRank.DIECI));
-//
-//        Player player3 = new Player("Flavio");
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.ASSO));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DUE));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.TRE));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.QUATTRO));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.CINQUE));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SEI));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.SETTE));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.OTTO));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.NOVE));
-//        player3.takeCardToBoard(new Card(CardSeed.CUORI, CardRank.DIECI));
-//
-//        Player player4 = new Player("Gaetano");
-//
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.ASSO));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DUE));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.TRE));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.QUATTRO));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.CINQUE));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SEI));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.SETTE));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.OTTO));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.NOVE));
-//        player4.takeCardToBoard(new Card(CardSeed.PICCHE, CardRank.DIECI));
-//
-//        Scacchiera scacchiera = new Scacchiera(Arrays.asList(player1,player2, player3, player4));
+    public class SchermataIniziale {
+        public static boolean interrompiCiclo = false;
+
+        public static void setInterrompiCiclo(){interrompiCiclo = true;}
+
+        public SchermataIniziale(){
+            mainFrame = new MyFrame();
+            mainFrame.setSize(new Dimension(1440, 900));
+            mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            schermataInizialePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/Nuovo progetto.png");
+            schermataInizialePanel.setLayout(new GridBagLayout());
+
+            GridBagConstraints gbcJtrash = new GridBagConstraints();
+            gbcJtrash.gridx = 0;
+            gbcJtrash.gridy = 0;
+
+            GridBagConstraints gbcStartGameButton = new GridBagConstraints();
+            gbcStartGameButton.gridx = 0;
+            gbcStartGameButton.gridy = 1;
+
+            mainFrame.add(schermataInizialePanel);
+            mainFrame.setVisible(true);
+
+            trashLabel = new JLabel(new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/JTrashScritta.png"));
+            startGameButton = new JButton("Avvia Gioco");
+            startGameButton.addMouseListener(new PersonalMouseListeners.AvviaGioco());
+
+            schermataInizialePanel.add(trashLabel, gbcJtrash);
+            schermataInizialePanel.add(startGameButton, gbcStartGameButton);
+
+            while (1 == 1) {
+                if(interrompiCiclo == true)
+                    break;
+
+                schermataInizialePanel.add(trashLabel, gbcJtrash);
+                trashLabel.setVisible(true);
+//                mainFrame.repaint();
+
+
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                trashLabel.setVisible(false);
+                schermataInizialePanel.remove(trashLabel);
+                schermataInizialePanel.add(new JLabel(), gbcJtrash);
+//                mainFrame.repaint();
+
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            schermataInizialePanel.remove(startGameButton);
+        }
     }
 }

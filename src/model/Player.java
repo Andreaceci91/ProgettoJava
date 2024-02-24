@@ -17,7 +17,7 @@ public class Player {
 
     public Player(String nickname){
         this.nickname = nickname;
-        this.boardCardDimension = 2;
+        this.boardCardDimension = 1;
         boardCard = new ArrayList<>();
         this.remainingCards = this.boardCardDimension;
     }

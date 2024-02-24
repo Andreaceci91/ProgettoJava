@@ -28,7 +28,10 @@ public class MatchManager extends Observable {
     public MatchManager() {
     }
 
-    public void avviaGioco() {
+    public void avviaGioco() throws InterruptedException {
+        setChanged();
+        notifyObservers(Arrays.asList(9));
+
         System.out.println("Inserisci numero giocatori");
         Scanner scanner = new Scanner(System.in);
         setNumberOfPlayer(scanner.nextInt());
@@ -513,6 +516,67 @@ public class MatchManager extends Observable {
             }
         }
 
+
+        if(giocoFinito){
+            File file = new File(giocatoriPath);
+
+            if(!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            HashMap<String, Integer> statisticheGiocatoriLette = new HashMap<>();
+
+            try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
+                String line;
+
+                while((line = br.readLine()) != null){
+                    String[] app = line.split(" ");
+
+                    statisticheGiocatoriLette.put(app[0], Integer.parseInt(app[1]));
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            for(Player p: playerList){
+                statisticheGiocatoriLette.computeIfPresent(p.getNickname(), (key, value) -> {
+                    return Math.max(value, p.getPartiteVinte());
+                });
+
+                statisticheGiocatoriLette.computeIfAbsent(p.getNickname(), key-> p.getPartiteVinte());
+            }
+
+            FileWriter fw = null;
+
+            try {
+                fw = new FileWriter(file.getAbsoluteFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            for(String key: statisticheGiocatoriLette.keySet()) {
+                try {
+                    bw.write(key + " " + statisticheGiocatoriLette.get(key) + "\n");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            try {
+                bw.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
         this.playerIndex = 0;
         inizializzaGioco();
 
@@ -605,7 +669,12 @@ public class MatchManager extends Observable {
                 }
             }
 
-        }
+    }
 
+    public void comandoAvviaGioco(){
+        System.out.println("Premuto il pulsante avvia gioco");
+        setChanged();
+        notifyObservers(Arrays.asList(99));
+    }
 }
 
