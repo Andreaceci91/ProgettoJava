@@ -56,6 +56,8 @@ public class Scacchiera implements Observer {
     JTextArea player3TextArea = new JTextArea();
     JTextArea player4TextArea = new JTextArea();
 
+    JTextArea empty1TextArea = new JTextArea("Text 1");
+
     MyPanel schermataInizialePanel;
     GridBagConstraints gbcStartGameButton;
     JLabel trashLabel;
@@ -68,13 +70,17 @@ public class Scacchiera implements Observer {
     }
 
     public void creaScacchiera2(List<Player> listaPlayer, int playerIndex, Deck discardedCards) {
+        if(schermataInizialePanel != null)
+            mainFrame.remove(schermataInizialePanel);
+
         if (gamePanel != null)
             mainFrame.remove(gamePanel);
         else{
             //Setto Mainframe prima volta
-            mainFrame.remove(schermataInizialePanel);
+//            mainFrame.remove(schermataInizialePanel);
             mainFrame.setLayout(new GridBagLayout());
         }
+
 
 
         gamePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/BackGround_Resized.png");
@@ -368,7 +374,9 @@ public class Scacchiera implements Observer {
         gbcEmpty1TextArea.weightx = 0.1;
         gbcEmpty1TextArea.gridx = 0;
         gbcEmpty1TextArea.gridy = 0;
-        mainFrame.add(new JTextArea("Text 1"), gbcEmpty1TextArea);
+
+//        mainFrame.add(new JTextArea("Text 1"), gbcEmpty1TextArea);
+        mainFrame.add(empty1TextArea, gbcEmpty1TextArea);
 
         GridBagConstraints gbcPlayer1TextArea = new GridBagConstraints();
         gbcPlayer1TextArea.weighty = 0.1;
@@ -382,7 +390,8 @@ public class Scacchiera implements Observer {
         gbcEmpty2TextArea.weightx = 0.1;
         gbcEmpty2TextArea.gridx = 2;
         gbcEmpty2TextArea.gridy = 0;
-        mainFrame.add(new JTextArea("Text 2"), gbcEmpty2TextArea);
+//        mainFrame.add(new JTextArea("Text 2"), gbcEmpty2TextArea);
+        mainFrame.add(empty1TextArea, gbcEmpty1TextArea);
 
         GridBagConstraints gbcPlayer3TextArea = new GridBagConstraints();
         gbcPlayer3TextArea.weighty = 0.1;
@@ -411,8 +420,8 @@ public class Scacchiera implements Observer {
         gbcEmpty3TextArea.weightx = 0.1;
         gbcEmpty3TextArea.gridx = 0;
         gbcEmpty3TextArea.gridy = 2;
-        mainFrame.add(new JTextArea("Text 3"), gbcEmpty3TextArea);
-
+//        mainFrame.add(new JTextArea("Text 3"), gbcEmpty3TextArea);
+        mainFrame.add(empty1TextArea, gbcEmpty1TextArea);
 
         GridBagConstraints gbcPlayer2TextArea = new GridBagConstraints();
         gbcPlayer2TextArea.weighty = 0.1;
@@ -426,7 +435,8 @@ public class Scacchiera implements Observer {
         gbcEmpty4TextArea.weightx = 0.1;
         gbcEmpty4TextArea.gridx = 2;
         gbcEmpty4TextArea.gridy = 2;
-        mainFrame.add(new JTextArea("Text 4"), gbcEmpty4TextArea);
+//        mainFrame.add(new JTextArea("Text 4"), gbcEmpty4TextArea);
+        mainFrame.add(empty1TextArea, gbcEmpty1TextArea);
     }
 
     private static String getStringPathFromCard(Card card) {
@@ -633,7 +643,7 @@ public class Scacchiera implements Observer {
             player3TextArea.setText("");
             player3TextArea.append("Nickname: " + playerList.get(2).getNickname() + "\n");
             player3TextArea.append("BoardCardDimension: " + playerList.get(2).getboardCardDimension() + "\n");
-            player3TextArea.append("Lv: " + playerList.get(3).getPartiteVinte());
+            player3TextArea.append("Lv: " + playerList.get(2).getPartiteVinte());
         }
 
         if (playerList.size() >= 4) {
@@ -672,13 +682,13 @@ public class Scacchiera implements Observer {
 
         //Passato segnale 9 che corrisponde ad inizializzazione giocatori
         if ((int) list.get(0) == 9) {
-            new SchermataIniziale();
+            new SchermataIniziale2();
 //            repaintPanelFrame();
         }
 
         //Passato segnale 99 che corrisponde ad inizializzazione giocatori
         if ((int) list.get(0) == 99) {
-            SchermataIniziale.setInterrompiCiclo();
+            SchermataIniziale2.setInterrompiCiclo();
 //            mainFrame.remove(schermataInizialePanel);
 
 //            mainFrame = null;
@@ -883,16 +893,16 @@ public class Scacchiera implements Observer {
             GridBagConstraints gbcStartGameButton = new GridBagConstraints();
             gbcStartGameButton.gridx = 0;
             gbcStartGameButton.gridy = 1;
-
-            mainFrame.add(schermataInizialePanel);
-            mainFrame.setVisible(true);
-
-            trashLabel = new JLabel(new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/JTrashScritta.png"));
             startGameButton = new JButton("Avvia Gioco");
             startGameButton.addMouseListener(new PersonalMouseListeners.AvviaGioco());
 
+            trashLabel = new JLabel(new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/JTrashScritta.png"));
+
+            mainFrame.add(schermataInizialePanel);
             schermataInizialePanel.add(trashLabel, gbcJtrash);
+
             schermataInizialePanel.add(startGameButton, gbcStartGameButton);
+            mainFrame.setVisible(true);
 
             while (1 == 1) {
                 if(interrompiCiclo == true)
@@ -921,7 +931,100 @@ public class Scacchiera implements Observer {
                 }
             }
 
-            schermataInizialePanel.remove(startGameButton);
+//            schermataInizialePanel.remove(startGameButton);
+        }
+    }
+
+    public class SchermataIniziale2{
+        public static boolean interrompiCiclo = false;
+
+        public static void setInterrompiCiclo(){interrompiCiclo = true;}
+
+        public SchermataIniziale2() {
+            interrompiCiclo = false;
+
+            System.out.println("SOno qui");
+            if (mainFrame == null) {
+                mainFrame = new MyFrame();
+                mainFrame.setLayout(new GridBagLayout());
+                mainFrame.setSize(new Dimension(1440, 900));
+                mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            }
+            else{
+                mainFrame.remove(player1TextArea);
+                mainFrame.remove(player2TextArea);
+                mainFrame.remove(player3TextArea);
+                mainFrame.remove(player4TextArea);
+                mainFrame.remove(gamePanel);
+                mainFrame.remove(empty1TextArea);
+                mainFrame.repaint();
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+
+
+            schermataInizialePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/Nuovo progetto.png");
+            schermataInizialePanel.setLayout(new GridBagLayout());
+
+            GridBagConstraints gbcSchermataInizialePanel = new GridBagConstraints();
+            gbcSchermataInizialePanel.weighty = 1;
+            gbcSchermataInizialePanel.weightx = 1;
+            gbcSchermataInizialePanel.fill = GridBagConstraints.BOTH;
+
+            GridBagConstraints gbcJtrash = new GridBagConstraints();
+            gbcJtrash.gridx = 0;
+            gbcJtrash.gridy = 0;
+
+            GridBagConstraints gbcStartGameButton = new GridBagConstraints();
+            gbcStartGameButton.gridx = 0;
+            gbcStartGameButton.gridy = 1;
+            startGameButton = new JButton("Avvia Gioco");
+            startGameButton.addMouseListener(new PersonalMouseListeners.AvviaGioco());
+
+            trashLabel = new JLabel(new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/JTrashScritta.png"));
+
+            mainFrame.add(schermataInizialePanel, gbcSchermataInizialePanel);
+            schermataInizialePanel.add(trashLabel, gbcJtrash);
+
+            schermataInizialePanel.add(startGameButton, gbcStartGameButton);
+            mainFrame.setVisible(true);
+
+            mainFrame.repaint();
+
+
+            while (1 == 1) {
+                if(interrompiCiclo == true)
+                    break;
+
+                schermataInizialePanel.add(trashLabel, gbcJtrash);
+                trashLabel.setVisible(true);
+//                mainFrame.repaint();
+
+
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                trashLabel.setVisible(false);
+                schermataInizialePanel.remove(trashLabel);
+                schermataInizialePanel.add(new JLabel(), gbcJtrash);
+//                mainFrame.repaint();
+
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+//            schermataInizialePanel.remove(startGameButton);
         }
     }
 }

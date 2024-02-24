@@ -45,6 +45,10 @@ public class Player {
     public void initializeBoardCard(){
         this.boardCard = new ArrayList<>();
     }
+
+    public void initializeBoardCardDimension(){
+        this.boardCardDimension = 1;
+    }
     public void initializaRemainingCard(){this.remainingCards = this.boardCardDimension;}
 
     public void incrementaPartiteVinte(){this.partiteVinte++;}

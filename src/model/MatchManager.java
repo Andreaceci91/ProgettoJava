@@ -25,12 +25,17 @@ public class MatchManager extends Observable {
     public Semaphore semaphoreInteractionOnDeck = new Semaphore(0);
     public Semaphore semaphoreInteractionOnBoard = new Semaphore(0);
 
+    boolean firstPlay = true;
+
     public MatchManager() {
     }
 
-    public void avviaGioco() throws InterruptedException {
-        setChanged();
-        notifyObservers(Arrays.asList(9));
+    public void avviaGioco(){
+        //Da reinserire
+//        if(firstPlay == true) {
+            setChanged();
+            notifyObservers(Arrays.asList(9));
+//        }
 
         System.out.println("Inserisci numero giocatori");
         Scanner scanner = new Scanner(System.in);
@@ -207,7 +212,23 @@ public class MatchManager extends Observable {
         if(ultimoGiro == true && playerIndex == firtPlayerIndexWinner) {
             System.out.println("Sono qui");
             if (termineRoundOTermineGioco() == true) {
-                throw new RuntimeException("Gioco Terminato");
+                System.out.println("Gioco Terminato");
+
+                System.out.println("Vuoi giocare nuovamente?: ");
+                Scanner scanner = new Scanner(System.in);
+                String scelta = scanner.nextLine();
+
+                if(scelta.equals("no"))
+                    throw new RuntimeException("Gioco Terminato");
+                else if (scelta.equals("si")) {
+                    firstPlay = false;
+                    avviaGioco();
+
+                }
+                else
+                    throw new RuntimeException("Scelta non valida!");
+
+
             } else {
                 //Elimino carta visualizzata a terra
                 setChanged();
@@ -228,7 +249,7 @@ public class MatchManager extends Observable {
         setChanged();
         notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
-        sleep(300);
+//        sleep(300);
 
         //Controllo se carte del mazzo sono terminate
         if (gameDeck.getRemainingCardOfDeck() == 0) {
@@ -290,18 +311,18 @@ public class MatchManager extends Observable {
         setChanged();
         notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
-        sleep(300);
+//        sleep(300);
 
         //Visualizzazione carta pescata
         setChanged();
         notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
 
-        sleep(200);
-
-        sleep(1000);
+//        sleep(200);
+//
+//        sleep(1000);
 
         do {
-            sleep(1000);
+//            sleep(1000);
 
             cardInHand.setFaceUpTrue();
             int cardInHandIndex = cardInHand.getRank().rankToValue() - 1;
@@ -339,7 +360,7 @@ public class MatchManager extends Observable {
                     interactionOnBoard = false;
                 }
 
-                sleep(500);
+//                sleep(500);
                 playerInRound.reduceRemainingCards();
 
                 if (controlloJtrash()) {
@@ -477,7 +498,7 @@ public class MatchManager extends Observable {
 
         setChanged();
         notifyObservers(Arrays.asList(3, playerIndex));
-        sleep(200);
+//        sleep(200);
 
 //        In revisione
 //        setChanged();
@@ -485,7 +506,7 @@ public class MatchManager extends Observable {
         setChanged();
         notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
-        sleep(1500);
+//        sleep(1500);
 
         calcolaTurno();
     }

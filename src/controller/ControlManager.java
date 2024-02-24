@@ -17,7 +17,7 @@ public class ControlManager {
         ApplicazionManager.modelInstance.avviaGioco();
 
         do {
-            Thread.sleep(1500);
+//            Thread.sleep(1500);
             ApplicazionManager.modelInstance.turnoDiGioco();
         }while(true);
 
