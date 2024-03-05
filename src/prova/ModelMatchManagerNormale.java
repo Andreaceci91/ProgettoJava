@@ -1,12 +1,15 @@
-package model;
+package prova;
+
+import model.Card;
+import model.CardRank;
+import model.Deck;
+import model.Player;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
-public class MatchManager extends Observable {
+public class ModelMatchManagerNormale extends Observable {
 
     List<Player> playerList;
     Deck gameDeck;
@@ -14,8 +17,8 @@ public class MatchManager extends Observable {
     Card cardInHand;
     int playerIndex;
     int numberOfPlayer;
-    String giocatoriPathVinte = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriVinte.txt";
-    String giocatoriPathPerse = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriPerse.txt";
+    String giocatoriPath = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/Giocatori.txt";
+
     List<Player> winnerPlayerList;
     int firtPlayerIndexWinner;
     boolean ultimoGiro;
@@ -29,16 +32,7 @@ public class MatchManager extends Observable {
     boolean firstPlay = true;
     String sceltaPescata;
 
-    private static MatchManager matchManager;
-
-    private MatchManager() {
-    }
-
-    public static MatchManager getInstance(){
-        if(matchManager == null)
-            matchManager = new MatchManager();
-
-        return matchManager;
+    public ModelMatchManagerNormale() {
     }
 
     public void avviaGioco(){
@@ -82,7 +76,10 @@ public class MatchManager extends Observable {
 
 
         setChanged();
-        notifyObservers(Arrays.asList(0, playerList, playerIndex, discardedCards, gameDeck));
+        notifyObservers(Arrays.asList(0, playerList, playerIndex, discardedCards));
+
+//        setChanged();
+//        notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
 
     }
 
@@ -104,54 +101,28 @@ public class MatchManager extends Observable {
             playerList.add(new Player(nicknameApp));
         }
 
-//        try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
-//            String line;
-//            while((line = br.readLine()) != null){
-//                String[] statisticPlayer = line.split(" ");
-//
-//                String nomePlayer = statisticPlayer[0];
-//                int lvPlayer = Integer.parseInt(statisticPlayer[1]);
-//
-//                for(Player p: playerList){
-//                    if(p.getNickname().equals(nomePlayer))
-//                        p.setPartiteVinte(lvPlayer);
-//                }
-//
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        try {
-            Files.lines(Paths.get(giocatoriPathVinte)).forEach(line -> {
+        try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
+            String line;
+            while((line = br.readLine()) != null){
                 String[] statisticPlayer = line.split(" ");
+
                 String nomePlayer = statisticPlayer[0];
                 int lvPlayer = Integer.parseInt(statisticPlayer[1]);
-                playerList.stream()
-                        .filter(p -> p.getNickname().equals(nomePlayer))
-                        .findFirst()
-                        .ifPresent(p -> p.setPartiteVinte(lvPlayer));
-            });
+
+                for(Player p: playerList){
+                    if(p.getNickname().equals(nomePlayer))
+                        p.setPartiteVinte(lvPlayer);
+                }
+
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        try {
-            Files.lines(Paths.get(giocatoriPathPerse)).forEach(line -> {
-                String[] statisticPlayer = line.split(" ");
-                String nomePlayer = statisticPlayer[0];
-                int pPerse = Integer.parseInt(statisticPlayer[1]);
-                playerList.stream()
-                        .filter(p -> p.getNickname().equals(nomePlayer))
-                        .findFirst()
-                        .ifPresent(p -> p.setPartitePerse(pPerse));
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
     }
+
 
         public static void assegnaCarte(Player player, Deck gameDeck) {
         for (int i = 0; i < player.getboardCardDimension(); i++) {
@@ -160,16 +131,22 @@ public class MatchManager extends Observable {
     }
 
     private boolean controlloCartaJackDonna(Card card) {
-        return card.getRank() == CardRank.JACK || card.getRank() == CardRank.DONNA;
+        if (card.getRank() == CardRank.JACK || card.getRank() == CardRank.DONNA)
+            return true;
+
+        return false;
     }
 
     private boolean controlloCartaJollyRe(Card card) {
-        return card.getRank() == CardRank.JOLLY || card.getRank() == CardRank.RE;
+        if (card.getRank() == CardRank.JOLLY || card.getRank() == CardRank.RE)
+            return true;
+
+        return false;
     }
 
     private void movimentoComputer(Player player) {
         boolean sostituito = false;
-        Card appCard;
+        Card appCard = null;
         while (!sostituito) {
 
             //scelgo un numero a caso tra 0 e dimensione del board
@@ -178,38 +155,58 @@ public class MatchManager extends Observable {
             appCard = player.getBoardCards().get(randomIndex);
 
             if (!appCard.getFaceUp()) {
-//                player.showCard();
+                player.showCard();
+//                System.out.print(" * Scambio: " + cardInHand + " con " + appCard + "  111" + "\n");
+//                System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + (randomIndex + 1));
 
                 //posiziono la carta
                 player.getBoardCards().set(randomIndex, cardInHand);
 
                 cardInHand = appCard;
+                //Ristampo la scacchiera
+                setChanged();
+                notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
                 setChanged();
-                notifyObservers(Arrays.asList(12, playerIndex, randomIndex, cardInHand, appCard, sceltaPescata));
+                notifyObservers(Arrays.asList(6, this.playerIndex));
+
+                //In revisione, si può rimuovere questo controllo è anche nel ComposeGampanel from matrix
+                if(!discardedCards.isEmpty()) {
+                    //Aggiorno carta sul tavolo
+                    setChanged();
+                    notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
+                }
 
                 sostituito = true;
             }
         }
 
-//        System.out.println("Uscito da movimento computer");
+
+        //Aggiorno visualizzazione carta vicino a giocatore dal giocatore
+        setChanged();
+        notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
+
+        //controllo termine partita
+//        controlloTerminePartita(player);
+
+        System.out.println("Uscito da movimento computer");
     }
 
     public void movimentoUmanoPescaTerra() {
-//        System.out.println("Sono in movimento umano pescaterra");
-        if(interactionOnDeck){
+        if(interactionOnDeck == true){
+//            interactionOnDeck = false;
             cardInHand = discardedCards.getLastERemove();
-//            System.out.println("Carta Pescata da terra: " + cardInHand);
+            System.out.println("Carta Pescata da terra: " + cardInHand);
             this.sceltaPescata = "terra";
             semaphoreInteractionOnDeck.release();
         }
     }
 
     public void movimentoUmanoPescaMazzo(){
-//        System.out.println("Sono in movimento umano pescamazzo");
-        if(interactionOnDeck) {
+        if(interactionOnDeck == true) {
+//            interactionOnDeck = false;
             cardInHand = gameDeck.giveCard();
-//            System.out.println("Carta pescata dal mazzo: " + cardInHand);
+            System.out.println("Carta pescata dal mazzo: " + cardInHand);
             this.sceltaPescata = "mazzo";
             semaphoreInteractionOnDeck.release();
         }
@@ -218,9 +215,9 @@ public class MatchManager extends Observable {
     public void turnoDiGioco() {
         sceltaPescata = "";
 
-        if(ultimoGiro && playerIndex == firtPlayerIndexWinner) {
-//            System.out.println("Sono qui");
-            if (termineRoundOTermineGioco()) {
+        if(ultimoGiro == true && playerIndex == firtPlayerIndexWinner) {
+            System.out.println("Sono qui");
+            if (termineRoundOTermineGioco() == true) {
                 System.out.println("Gioco Terminato");
 
                 System.out.println("Vuoi giocare nuovamente?: ");
@@ -232,6 +229,7 @@ public class MatchManager extends Observable {
                 else if (scelta.equals("si")) {
                     firstPlay = false;
                     avviaGioco();
+
                 }
                 else
                     throw new RuntimeException("Scelta non valida!");
@@ -240,15 +238,24 @@ public class MatchManager extends Observable {
             } else {
                 //Elimino carta visualizzata a terra
                 setChanged();
-                notifyObservers(Arrays.asList(0, playerList, playerIndex, discardedCards, gameDeck));
+                notifyObservers(Arrays.asList(5));
             }
         }
 
-//        System.out.println("********************************");
-//        if (playerIndex != -1) {
-////            System.out.println("Turno di: " + playerList.get(playerIndex).getNickname());
-////            System.out.println(" * Carta coperta: " + cardInHand);
-//        }
+        System.out.println("********************************");
+        if (playerIndex != -1) {
+            System.out.println("Turno di: " + playerList.get(playerIndex).getNickname());
+            System.out.println(" * Carta coperta: " + cardInHand);
+        }
+
+        //Visualizzazione pedina
+//        setChanged();
+//        notifyObservers(Arrays.asList(6, this.playerIndex));
+
+        setChanged();
+        notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
+
+        sleep(300);
 
         //Controllo se carte del mazzo sono terminate
         if (gameDeck.getRemainingCardOfDeck() == 0) {
@@ -257,34 +264,23 @@ public class MatchManager extends Observable {
             discardedCards = new Deck();
         }
 
-        Card appCard;
+        Card appCard = null;
         Player playerInRound = playerList.get(playerIndex);
 
-        //Turno Umano
         if(playerIndex == 0){
-//            System.out.println("Fa la tua scelta");
+            System.out.println("Fa la tua scelta");
             System.out.println(gameDeck.getFirst());
-
-
-            setChanged();
-            notifyObservers(Arrays.asList(14, gameDeck, discardedCards));
 
             try {
                 interactionOnDeck = true;
-//                System.out.println("Acquisito");
                 semaphoreInteractionOnDeck.acquire();
-//                System.out.println("Rilasciato");
                 interactionOnDeck = false;
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//            System.out.println("Sono qui 1");
         }
-        //Turno Computer
         else{
-            setChanged();
-            notifyObservers(Arrays.asList(15));
             //Se le scartate sono un Re o Jolly
             if(discardedCards.getLast().getRank() == CardRank.RE || discardedCards.getLast().getRank() == CardRank.JOLLY){
                 cardInHand = discardedCards.getLastERemove();
@@ -292,29 +288,44 @@ public class MatchManager extends Observable {
             //Se il rank carta > 10 o maggiore della dimensione board giocatore o la faceUp non è un Wildcard
             } else if (discardedCards.getLast().getRank().rankToValue() > 10 || discardedCards.getLast().getRank().rankToValue() > playerInRound.getboardCardDimension() || (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getFaceUp() && (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.JOLLY && playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.RE))) {
                 cardInHand = this.gameDeck.giveCard();
-                sceltaPescata = "mazzo";
             }
             //Ottimizzazione scelta giocatore con carte < 5
             else if(!playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue()-1).getFaceUp() && playerInRound.getRemainingCards()< 5){
                 cardInHand = discardedCards.getLastERemove();
-                sceltaPescata = "terra";
             }
             //scelgo casualmente se pescare dal mazzo o da terra
             else{
-                if(casuale0e1() == 0) {
+                if(casuale0e1() == 0)
                     cardInHand = this.gameDeck.giveCard();
-                    sceltaPescata = "mazzo";
-                }
                 else {
                     cardInHand = discardedCards.getLastERemove();
-                    sceltaPescata = "terra";
                 }
             }
         }
 
-        //Movimento carta vicino al Player di turno e la Ruoto
+//        In revisione
+//        //Visualizzazione carte scartate
+//        if(discardedCards.isEmpty()) {
+//            setChanged();
+//            notifyObservers(Arrays.asList(5));
+//        }
+//        else {
+//            setChanged();
+//            notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
+//        }
+
         setChanged();
-        notifyObservers(Arrays.asList(11, playerIndex, sceltaPescata));
+        notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
+
+        sleep(300);
+
+        //Visualizzazione carta pescata
+        setChanged();
+        notifyObservers(Arrays.asList(2, cardInHand, playerIndex, sceltaPescata));
+
+//        sleep(200);
+//
+        sleep(1000);
 
         do {
             sleep(1000);
@@ -323,10 +334,19 @@ public class MatchManager extends Observable {
             int cardInHandIndex = cardInHand.getRank().rankToValue() - 1;
 
             if (controlloCartaJackDonna(cardInHand)) {
-                discardedCards.addCard(cardInHand);
-
+                //Rimuovo visualizzazione carta pescata dal giocatore
                 setChanged();
-                notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
+                notifyObservers(Arrays.asList(3, playerIndex));
+
+                discardedCards.addCard(cardInHand);
+                System.out.println(" * Scarto: " + cardInHand);
+
+//                In revisione
+//                //Aggiorno visualizzazione scarto la carta e la posiziono sul tavolo
+//                setChanged();
+//                notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
+                setChanged();
+                notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
                 break;
 
@@ -335,8 +355,6 @@ public class MatchManager extends Observable {
                 if (playerIndex != 0)
                     movimentoComputer(playerInRound);
                 else {
-                    setChanged();
-                    notifyObservers(Arrays.asList(16));
                     interactionOnBoard = true;
 
                     try {
@@ -348,16 +366,15 @@ public class MatchManager extends Observable {
                     interactionOnBoard = false;
                 }
 
+                sleep(500);
                 playerInRound.reduceRemainingCards();
 
                 if (controlloJtrash()) {
                     //Rimuovo visualizzazione carta pescata dal giocatore
-
-//                    System.out.println(" * Scarto: " + cardInHand);
-                    discardedCards.addCard(cardInHand);
-
                     setChanged();
-                    notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
+                    notifyObservers(Arrays.asList(3, playerIndex));
+                    System.out.println(" * Scarto: " + cardInHand);
+                    discardedCards.addCard(cardInHand);
                     break;
                 }
             }
@@ -365,10 +382,17 @@ public class MatchManager extends Observable {
             //se indice carta è maggiore di dimensione del board del giocatore e non è una WildCard
             else if (cardInHandIndex >= playerInRound.getboardCardDimension()) {
                 discardedCards.addCard(cardInHand);
+                System.out.println(" * Scarto: " + cardInHand);
 
+                //Rimuovo visualizzazione carta pescata dal giocatore
+//                setChanged();
+//                notifyObservers(Arrays.asList(3, playerIndex));
+
+//                In revisione
+//                setChanged();
+//                notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
                 setChanged();
-                notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-//                System.out.println(" * Scarto: " + cardInHand);
+                notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
                 break;
             }
@@ -377,35 +401,46 @@ public class MatchManager extends Observable {
                 //controllo posizione già occupata\scoperta
                 if (playerInRound.getBoardCards().get(cardInHandIndex).getFaceUp()) {
                     //se occupata da Jolly o Re
-                    if (playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.JOLLY ||
-                            playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.RE) {
+                    if (playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.JOLLY || playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.RE) {
 
                         //Carta appoggio per WildCards che era sul board
                         appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
-                       //Stampe
-//                        playerInRound.showCard();
-//                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
-//                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
-
+//                       Stampe
                         //sostituisco WildCard sul board con carta in mano
+                        playerInRound.showCard();
+                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
+                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
+
                         playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
 
+
                         setChanged();
-                        notifyObservers(Arrays.asList(12, playerIndex, cardInHandIndex, cardInHand, appCard, sceltaPescata));
+                        notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
+
+//                        setChanged();
+//                        notifyObservers(Arrays.asList(6, this.playerIndex));
+
+//                        In revisione
+//                        if(!discardedCards.isEmpty()) {
+//                            //Aggiorno carta sul tavolo
+//                            setChanged();
+//                            notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
+//                        }
 
                         //Aggiorno visualizzazione carta vicino al giocatore
                         cardInHand = appCard;
+                        setChanged();
+                        notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
+
+//                        playerInRound.reduceRemainingCards();
 
                         if (controlloJtrash()) {
                             //Rimuovo visualizzazione carta pescata dal giocatore
-
-//                            System.out.println(" * Scarto: " + cardInHand);
-                            discardedCards.addCard(cardInHand);
-
                             setChanged();
-                            notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-
+                            notifyObservers(Arrays.asList(3, playerIndex));
+                            System.out.println(" * Scarto: " + cardInHand);
+                            discardedCards.addCard(cardInHand);
                             break;
                         }
                     }
@@ -413,61 +448,83 @@ public class MatchManager extends Observable {
                     //altrimenti
                     else {
                         discardedCards.addCard(cardInHand);
-//                        System.out.println(" * Scarto: " + cardInHand);
+                        System.out.println(" * Scarto: " + cardInHand);
+//                        In revisione
+//                        setChanged();
+//                        notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
 
                         setChanged();
-                        notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-
-//                        In revisione
+                        notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
                         break;
                     }
                 }
 
                 //se posizione non è occupata
                 else {
-                    //prendo in mano carta coperta del board giocatore
+                    //prendo in mano carta coperta
                     appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
                     //posiziono la carta
-//                    playerInRound.showCard();
-//                    System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  299");
-//                    System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
+                    playerInRound.showCard();
+                    System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  299");
+                    System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
 
                     setChanged();
                     notifyObservers(Arrays.asList(8, playerIndex, cardInHandIndex));
 
-                    sleep(2000);
+                    sleep(1000);
 
-                    //Scambio le carte
+//                    setChanged();
+//                    notifyObservers(Arrays.asList(10, playerIndex, cardInHandIndex));
+//                    sleep(1000);
+
                     playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
+
+                    //Aggiorno visualizzazione scacchiera giocatori
                     setChanged();
-                    notifyObservers(Arrays.asList(12, playerIndex, cardInHandIndex, cardInHand, appCard, sceltaPescata));
+                    notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
 
-//                    cardInHand = appCard;
+//                    In revisione
+//                    setChanged();
+//                    notifyObservers(Arrays.asList(6, this.playerIndex));
 
-//                    if(!discardedCards.isEmpty()) {
-////                        In revisione
-//                        //Aggiorno carta sul tavolo
-//                    }
+                    if(!discardedCards.isEmpty()) {
+//                        In revisione
+                        //Aggiorno carta sul tavolo
+//                        setChanged();
+//                        notifyObservers(Arrays.asList(1, discardedCards.getLast(), playerIndex));
+                    }
 
                     cardInHand = appCard;
+                    setChanged();
+                    notifyObservers(Arrays.asList(2, cardInHand, playerIndex));
 
                     playerInRound.reduceRemainingCards();
 
                     if (controlloJtrash()) {
                         //Rimuovo visualizzazione carta pescata dal giocatore
-//                        System.out.println(" * Scarto: " + cardInHand);
+                        setChanged();
+                        notifyObservers(Arrays.asList(3, playerIndex));
+                        System.out.println(" * Scarto: " + cardInHand);
 
                         discardedCards.addCard(cardInHand);
-
-                        setChanged();
-                        notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
                         break;
                     }
                 }
             }
-
         } while (true);
+
+        setChanged();
+        notifyObservers(Arrays.asList(3, playerIndex));
+        sleep(200);
+
+//        In revisione
+//        setChanged();
+//        notifyObservers(Arrays.asList(7, this.playerIndex));
+        setChanged();
+        notifyObservers(Arrays.asList(4, playerList, playerIndex, discardedCards));
+
+        sleep(1500);
 
         calcolaTurno();
     }
@@ -487,103 +544,95 @@ public class MatchManager extends Observable {
             p.reduceBoardCardDimension();
 
         for (Player p : this.playerList) {
-//            System.out.println("Dimensione Board: " + p.getNickname() + " " + p.getboardCardDimension());
+            System.out.println("Dimensione Board: " + p.getNickname() + " " + p.getboardCardDimension());
         }
 
-        for(Player p: playerList){
+        for(Player p: winnerPlayerList){
             if (p.getboardCardDimension() == 0) {
                 giocoFinito = true;
                 p.incrementaPartiteVinte();
                 System.out.println("Gioco terminato da: " + p.getNickname());
             }
-            else
-                p.incrementaPartitePerse();
         }
 
 
         if(giocoFinito){
-            salvataggioPartite(giocatoriPathVinte);
-            salvataggioPartite(giocatoriPathPerse);
+            File file = new File(giocatoriPath);
+
+            if(!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            HashMap<String, Integer> statisticheGiocatoriLette = new HashMap<>();
+
+            try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
+                String line;
+
+                while((line = br.readLine()) != null){
+                    String[] app = line.split(" ");
+
+                    statisticheGiocatoriLette.put(app[0], Integer.parseInt(app[1]));
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            for(Player p: playerList){
+                statisticheGiocatoriLette.computeIfPresent(p.getNickname(), (key, value) -> {
+                    return Math.max(value, p.getPartiteVinte());
+                });
+
+                statisticheGiocatoriLette.computeIfAbsent(p.getNickname(), key-> p.getPartiteVinte());
+            }
+
+            FileWriter fw = null;
+
+            try {
+                fw = new FileWriter(file.getAbsoluteFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            for(String key: statisticheGiocatoriLette.keySet()) {
+                try {
+                    bw.write(key + " " + statisticheGiocatoriLette.get(key) + "\n");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            try {
+                bw.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
 
 
         this.playerIndex = 0;
         inizializzaGioco();
 
-        return giocoFinito;
-    }
-
-    private void salvataggioPartite(String fileDaUsarePath) {
-        File file = new File(fileDaUsarePath);
-
-        if(!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        HashMap<String, Integer> statisticheGiocatoriLette = new HashMap<>();
-
-        try(BufferedReader br = new BufferedReader(new FileReader(fileDaUsarePath))){
-            String line;
-
-            while((line = br.readLine()) != null){
-                String[] app = line.split(" ");
-
-                statisticheGiocatoriLette.put(app[0], Integer.parseInt(app[1]));
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if(fileDaUsarePath.equals(giocatoriPathVinte)) {
-            for (Player p : playerList) {
-                statisticheGiocatoriLette.computeIfPresent(p.getNickname(), (key, value) -> Math.max(value, p.getPartiteVinte()));
-                statisticheGiocatoriLette.computeIfAbsent(p.getNickname(), key -> p.getPartiteVinte());
-            }
-        }
-        else{
-            for(Player p: playerList){
-                statisticheGiocatoriLette.computeIfPresent(p.getNickname(), (key, value) -> Math.max(value, p.getPartitePerse()));
-                statisticheGiocatoriLette.computeIfAbsent(p.getNickname(), key-> p.getPartitePerse());
-            }
-        }
-
-        FileWriter fw;
-
-        try {
-            fw = new FileWriter(file.getAbsoluteFile());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedWriter bw = new BufferedWriter(fw);
-
-        for(String key: statisticheGiocatoriLette.keySet()) {
-            try {
-                bw.write(key + " " + statisticheGiocatoriLette.get(key) + "\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            bw.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        if(giocoFinito)
+            return true;
+        else
+            return false;
     }
 
     private boolean controlloJtrash() {
         if (playerList.get(playerIndex).getRemainingCards() == 0) {
-//            System.out.println(playerList.get(playerIndex).getNickname() + ": *** JTrash ***");
+            System.out.println(playerList.get(playerIndex).getNickname() + ": *** JTrash ***");
 
-            if (!ultimoGiro){
+            if (ultimoGiro == false){
                 firtPlayerIndexWinner = playerIndex;
                 ultimoGiro = true;
-//                System.out.println("ULTIMOOOOO GIROOOOOOOOO");
+                System.out.println("ULTIMOOOOO GIROOOOOOOOO");
             }
 
             winnerPlayerList.add(playerList.get(playerIndex));
@@ -624,6 +673,7 @@ public class MatchManager extends Observable {
                     break;
             }
         }
+
     }
 
     public int casuale0e1(){
@@ -637,9 +687,9 @@ public class MatchManager extends Observable {
 
     }
 
-//    public List<Player> getPlayerList() {
-//        return this.playerList;
-//    }
+    public List<Player> getPlayerList() {
+        return this.playerList;
+    }
 
     public void setNumberOfPlayer(int numberOfPlayer) {
         this.numberOfPlayer = numberOfPlayer;
@@ -647,15 +697,14 @@ public class MatchManager extends Observable {
 
     public void movimentoUmanoPescaBoardIndex(int cardIndex) {
 
-        if(interactionOnBoard) {
+        if(interactionOnBoard == true) {
+            System.out.println("Sto scambiando una carta");
 
-            if(!playerList.get(playerIndex).getBoardCards().get(cardIndex - 1).getFaceUp()){
+            if(playerList.get(playerIndex).getBoardCards().get(cardIndex-1).getFaceUp() == false){
                 Card app = playerList.get(playerIndex).getBoardCards().get(cardIndex-1);
+//                setChanged();
+//                notifyObservers(Arrays.asList(8,app));
                 playerList.get(playerIndex).getBoardCards().set(cardIndex-1,cardInHand);
-
-                setChanged();
-                notifyObservers(Arrays.asList(12, playerIndex, cardIndex-1, cardInHand, app, sceltaPescata));
-
                 cardInHand = app;
                 semaphoreInteractionOnBoard.release();
                 }
@@ -664,7 +713,7 @@ public class MatchManager extends Observable {
     }
 
     public void comandoAvviaGioco(){
-//        System.out.println("Premuto il pulsante avvia gioco");
+        System.out.println("Premuto il pulsante avvia gioco");
         setChanged();
         notifyObservers(Arrays.asList(99));
     }

@@ -1,167 +1,97 @@
 package model;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Deck {
 
-    private List<Card> deck;
-    private int nJolly;
+    private LinkedList<Card> deck;
 
-    //Costruttore vuoto per Scarti da terra
-    public Deck(){
-        this.deck = new ArrayList<>();
+    // Costruttore vuoto per Scarti da terra
+    public Deck() {
+        this.deck = new LinkedList<>();
     }
 
-    //Costruttore Mazzo buono
-    public Deck(int numberOfPlayer){
-        deck = new ArrayList<>();
+    // Costruttore Mazzo buono
+    public Deck(int numberOfPlayer) {
+        deck = new LinkedList<>();
         createDeck(numberOfPlayer);
     }
 
-    public void createDeck(int numberOfPlayer){
+    public void createDeck(int numberOfPlayer) {
+        int nDeck = getNDeck(numberOfPlayer);
 
-        List<Integer> listNumber = new ArrayList<>();
-        int nDeck = 0;
+        this.deck = IntStream.range(0, nDeck)
+                .mapToObj(i -> Arrays.stream(CardRank.values())
+                        .filter(cr -> !cr.equals(CardRank.JOLLY))
+                        .flatMap(cr -> Arrays.stream(CardSeed.values())
+                                .map(cs -> new Card(cs, cr))))
+                .flatMap(s -> s)
+                .collect(Collectors.toCollection(LinkedList::new));
 
-        nDeck = getNDeck(numberOfPlayer);
-        composeSeedRankCards(nDeck);
         addJokersByPlayerCount(numberOfPlayer);
         Collections.shuffle(this.deck);
     }
 
     private void addJokersByPlayerCount(int numberOfPlayer) {
-        switch (numberOfPlayer) {
-            case 2:
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                break;
-            case 3:
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                break;
-            case 4:
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                this.deck.add(new Card(CardRank.JOLLY));
-                break;
+        int jokerCount = switch (numberOfPlayer) {
+            case 2 -> 2;
+            case 3, 4 -> 4;
+            default -> throw new IllegalArgumentException("Numero di giocatori non supportato: " + numberOfPlayer);
+        };
+
+        for (int i = 0; i < jokerCount; i++) {
+            this.deck.add(new Card(CardRank.JOLLY));
         }
     }
 
     private static int getNDeck(int numberOfPlayer) {
-        int nDeck;
-
-        switch ((numberOfPlayer)){
-            case 0:
-                throw new IllegalArgumentException("Devono esserci dei giocatori");
-            case 1:
-                throw new IllegalArgumentException("Non puoi giocare da solo");
-            case 2:
-                nDeck = 1;
-                break;
-            case 3:
-                nDeck = 2;
-                break;
-            case 4:
-                nDeck = 2;
-                break;
-            default:
-                throw new IllegalArgumentException("Puoi giocare massimo con 3 giocatori virtuali");
+        if (numberOfPlayer < 2 || numberOfPlayer > 4) {
+            throw new IllegalArgumentException("Il numero di giocatori deve essere compreso tra 2 e 4.");
         }
-        return nDeck;
+
+        return numberOfPlayer == 2 ? 1 : 2;
     }
 
-    private void composeSeedRankCards(int nDeck) {
-        //itero sui valori
-        for(int i = 0; i < nDeck; i++){
-            for(CardRank cr : CardRank.values()) {
-
-                if (!cr.equals(CardRank.JOLLY)) {
-                    //itero su tutti i semi
-                    for (CardSeed cs : CardSeed.values()) {
-                        //compongo carta
-                        Card compositeCard = new Card(cs, cr);
-
-                        //aggiungo carta composta a deck
-                        this.deck.add(compositeCard);
-                    }
-                }
-            }
-        }
+    public Card giveCard() {
+        return this.deck.pollFirst();
     }
 
-    private void composeSeedRankCardsTarocco(int nDeck) {
-        //itero sui valori
-        for(int i = 0; i < nDeck; i++){
-            for(CardRank cr : CardRank.values()) {
-
-                if (!cr.equals(CardRank.JOLLY) && !cr.equals(CardRank.RE) ) {
-                    //itero su tutti i semi
-                    for (CardSeed cs : CardSeed.values()) {
-                        //compongo carta
-                        Card compositeCard = new Card(cs, cr);
-
-                        //aggiungo carta composta a deck
-                        this.deck.add(compositeCard);
-                    }
-                }
-            }
-        }
-    }
-
-    public Card giveCard(){
-        Card givedCard = this.deck.getFirst();
-        this.deck.removeFirst();
-
-        return givedCard;
-    }
-
-    public void addCard(Card card){
+    public void addCard(Card card) {
         this.deck.add(card);
     }
 
-    public void printDeck(){
-        int conta = 0;
-        for(Card c : this.deck) {
-            System.out.println(c);
-            conta++;
-        }
-        System.out.println("Numero carte nel mazzo: " + conta);
-    }
-
-    public int getRemainingCardOfDeck(){
+    public int getRemainingCardOfDeck() {
         return this.deck.size();
     }
 
-    public Card getLast(){
+    public Card getLast() {
         return this.deck.getLast();
     }
-    public Card getFirst(){
+    public Card getSecondToLastCard(){
+        int deckDim = this.deck.size();
+        return this.deck.get(deckDim-2);
+    }
+
+    public Card getFirst() {
         return this.deck.getFirst();
     }
 
-    public Card getSecondToLastCard(){
-        int deckDim = this.deck.size();
-
-        return this.deck.get(deckDim-1);
-    }
-    public Card getLastERemove(){
-        Card lastCard = this.deck.getLast();
-        this.deck.removeLast();
-
-        return lastCard;
+    public Card getLastERemove() {
+        return this.deck.pollLast();
     }
 
-    public Boolean isEmpty(){
+    public int getDimension() {
+        return this.deck.size();
+    }
+
+    public boolean isEmpty() {
         return this.deck.isEmpty();
     }
 
-    public static Deck mischiaMazzo(Deck cards){
+    public static Deck mischiaMazzo(Deck cards) {
         Collections.shuffle(cards.deck);
-
         return cards;
     }
-
 }

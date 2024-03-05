@@ -6,11 +6,8 @@ import java.util.List;
 public class Player {
     
     private String nickname;
-    private Object avatar; //da implementare
-    private int partiteGiocate;
     private int partiteVinte;
     private int partitePerse;
-    private int lvPlayer;
     private int boardCardDimension;
     private List<Card> boardCard;
     private int remainingCards;
@@ -27,15 +24,10 @@ public class Player {
     }
 
     public void showCard(){
-//        System.out.println(" ");
-//        System.out.println("Carte in mano del player " + this.nickname);
-//        this.boardCard.forEach(System.out::println);
         for(Card c : this.boardCard ){
             System.out.println(c + " " + c.getFaceUp());
         }
     }
-
-    public void showFirst(){ System.out.println(boardCard.getFirst()); }
 
     //Metodi Setter
     public void reduceBoardCardDimension(){
@@ -46,9 +38,6 @@ public class Player {
         this.boardCard = new ArrayList<>();
     }
 
-    public void initializeBoardCardDimension(){
-        this.boardCardDimension = 1;
-    }
     public void initializaRemainingCard(){this.remainingCards = this.boardCardDimension;}
 
     public void incrementaPartiteVinte(){this.partiteVinte++;}
@@ -65,6 +54,9 @@ public class Player {
     public void setPartiteVinte(int nPartiteVinte){
         this.partiteVinte = nPartiteVinte;
     }
+    public void setPartitePerse(int nPartitePerse){
+        this.partitePerse = nPartitePerse;
+    }
 
     public  List<Card> getBoardCards(){return this.boardCard;}
 
@@ -73,10 +65,11 @@ public class Player {
     public int getPartiteVinte(){
         return this.partiteVinte;
     }
+    public int getPartitePerse(){
+        return this.partitePerse;
+    }
 
     public Card getCardFromIndex(int index){
-//        System.out.println(" ");
-//        System.out.println(this.boardCard.get(index-1));
         return this.boardCard.get(index-1);
     }
 
