@@ -6,34 +6,78 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
+
+/**
+ * The MatchManager class handles the logic of the game, including player management, deck initialization,
+ * game flow, and interaction between players and the game.
+ */
 public class MatchManager extends Observable {
 
-    List<Player> playerList;
-    Deck gameDeck;
-    Deck discardedCards;
-    Card cardInHand;
-    int playerIndex;
-    int numberOfPlayer;
-    String giocatoriPathVinte = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriVinte.txt";
-    String giocatoriPathPerse = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriPerse.txt";
-    List<Player> winnerPlayerList;
-    int firtPlayerIndexWinner;
-    boolean ultimoGiro;
+    /** The list of players participating in the game. */
+    private List<Player> playerList;
 
+    /** The main deck of the game. */
+    private Deck gameDeck;
+
+    /** The deck of discarded cards. */
+    private Deck discardedCards;
+
+    /** The current card in the hand of a player. */
+    private Card cardInHand;
+
+    /** The index of the current player in the player list. */
+    private int playerIndex;
+
+    /** The total number of players in the game. */
+    private int numberOfPlayer;
+
+    /** The file path for storing the statistics of winning players. */
+    private String giocatoriPathVinte = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriVinte.txt";
+
+    /** The file path for storing the statistics of losing players. */
+    private String giocatoriPathPerse = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/src/GiocatoriPerse.txt";
+
+    /** The list of players who have won the game. */
+    private List<Player> winnerPlayerList;
+
+    /** The index of the first player who won in the game. */
+    private int firtPlayerIndexWinner;
+
+    /** Flag indicating whether it's the last round of the game. */
+    private boolean ultimoGiro;
+
+    // Enable interaction on deck
     private static boolean interactionOnDeck = true;
+
+    // Disable interaction on board
     private static boolean interactionOnBoard = false;
 
+    /** Semaphore for controlling interaction on the game deck. */
     public Semaphore semaphoreInteractionOnDeck = new Semaphore(0);
+
+    /** Semaphore for controlling interaction on the game board. */
     public Semaphore semaphoreInteractionOnBoard = new Semaphore(0);
 
-    boolean firstPlay = true;
-    String sceltaPescata;
+    /** Flag indicating whether it's the first play of the game. */
+    private boolean firstPlay = true;
 
+    /** The choice of drawing a card from the deck or discarded pile. */
+    private String sceltaPescata;
+
+    /** The singleton instance of MatchManager. */
     private static MatchManager matchManager;
 
+    /**
+     * Private with no parameters constructor
+     */
     private MatchManager() {
     }
 
+    /**
+     * Gets the singleton instance of MatchManager.
+     *
+     * @return The singleton instance of MatchManager.
+     */
     public static MatchManager getInstance(){
         if(matchManager == null)
             matchManager = new MatchManager();
@@ -41,6 +85,9 @@ public class MatchManager extends Observable {
         return matchManager;
     }
 
+    /**
+     * Starts the game by initializing players and the game deck.
+     */
     public void avviaGioco(){
         //Da reinserire
 //        if(firstPlay == true) {
@@ -55,9 +102,11 @@ public class MatchManager extends Observable {
         inizializzaGioco();
     }
 
-    //inizializzo il gioco di carte
+    /**
+     * Initializes the game by generating the main deck, initializing player boards,
+     * and distributing cards among players.
+     */
     public void inizializzaGioco() {
-        //genero un gamedeck
         this.gameDeck = new Deck(numberOfPlayer);
         this.discardedCards = new Deck();
 
@@ -80,49 +129,33 @@ public class MatchManager extends Observable {
         //Giro prima carta sul tavolo
         discardedCards.addCard(cartaGirata);
 
-
         setChanged();
         notifyObservers(Arrays.asList(0, playerList, playerIndex, discardedCards, gameDeck));
 
     }
 
+    /**
+     * Initializes players by prompting user input for player names and try loading player statistics.
+     */
     public void inizializzaGiocatori() {
         Scanner scanner2 = new Scanner(System.in);
-        //Inizializzo lista giocatori
         playerList = new ArrayList<>();
         String nicknameApp;
 
-        //Inserisco Player Umano
+        // Entering the name of Human Player
         System.out.println("Inserisci nome del Player Umano");
         nicknameApp = scanner2.nextLine();
         playerList.add(new Player(nicknameApp));
 
-        //Inserisco Player Computer
+        // Entering the nam of Computer Players
         for (int i = 1; i < numberOfPlayer; i++) {
             System.out.println("Inserisci nome del Player Computer");
             nicknameApp = scanner2.nextLine();
             playerList.add(new Player(nicknameApp));
         }
 
-//        try(BufferedReader br = new BufferedReader(new FileReader(giocatoriPath))){
-//            String line;
-//            while((line = br.readLine()) != null){
-//                String[] statisticPlayer = line.split(" ");
-//
-//                String nomePlayer = statisticPlayer[0];
-//                int lvPlayer = Integer.parseInt(statisticPlayer[1]);
-//
-//                for(Player p: playerList){
-//                    if(p.getNickname().equals(nomePlayer))
-//                        p.setPartiteVinte(lvPlayer);
-//                }
-//
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
+        // Attempting to read each line from a file specified by the path stored in 'giocatoriPathVinte', which contains
+        // the number of games won for each player.
         try {
             Files.lines(Paths.get(giocatoriPathVinte)).forEach(line -> {
                 String[] statisticPlayer = line.split(" ");
@@ -137,6 +170,8 @@ public class MatchManager extends Observable {
             throw new RuntimeException(e);
         }
 
+        // Attempting to read each line from a file specified by the path stored in 'giocatoriPathPerse', which contains
+        // the number of lost games for each player.
         try {
             Files.lines(Paths.get(giocatoriPathPerse)).forEach(line -> {
                 String[] statisticPlayer = line.split(" ");
@@ -153,76 +188,116 @@ public class MatchManager extends Observable {
 
     }
 
-        public static void assegnaCarte(Player player, Deck gameDeck) {
-        for (int i = 0; i < player.getboardCardDimension(); i++) {
+    /**
+     * Assigns cards to a player from the game deck.
+     *
+     * @param player The player to which the cards will be assigned.
+     * @param gameDeck The game deck from which the cards will be drawn.
+     */
+    public static void assegnaCarte(Player player, Deck gameDeck) {
+        for (int i = 0; i < player.getboardCardDimension(); i++)
             player.takeCardToBoard(gameDeck.giveCard());
-        }
     }
 
+    /**
+     * Method to check if a given card is Jack or Queen.
+     *
+     * @param card The card to evaluate.
+     * @return True if the given card is Jack or Queen, false otherwise.
+     */
     private boolean controlloCartaJackDonna(Card card) {
         return card.getRank() == CardRank.JACK || card.getRank() == CardRank.DONNA;
     }
 
+    /**
+     * Method to check if a given card is Joker or King.
+     *
+     * @param card The card to evaluate.
+     * @return True if the given card is Joker or King, false otherwise.
+     */
     private boolean controlloCartaJollyRe(Card card) {
         return card.getRank() == CardRank.JOLLY || card.getRank() == CardRank.RE;
     }
 
+
+    /**
+     * Method to implement the computer's movement during the game.
+     *
+     * @param player The player currently in turn.
+     */
     private void movimentoComputer(Player player) {
         boolean sostituito = false;
         Card appCard;
         while (!sostituito) {
 
-            //scelgo un numero a caso tra 0 e dimensione del board
+            // Choose a random index between 0 and the player's board size
             int randomIndex = (int) (Math.random() * player.getboardCardDimension());
-            //prendo in mano carta che era a terra
+            // Take the card from the board
             appCard = player.getBoardCards().get(randomIndex);
-
+            // If the card is face down
             if (!appCard.getFaceUp()) {
-//                player.showCard();
-
-                //posiziono la carta
+                // Place the card
                 player.getBoardCards().set(randomIndex, cardInHand);
-
+                // Set the current card in hand
                 cardInHand = appCard;
-
+                // Notify the observers about the move
                 setChanged();
                 notifyObservers(Arrays.asList(12, playerIndex, randomIndex, cardInHand, appCard, sceltaPescata));
-
                 sostituito = true;
             }
         }
-
-//        System.out.println("Uscito da movimento computer");
     }
 
+    /**
+     * Implements the player's action of drawing a card from the discarded pile during their turn.
+     * If the interaction with the discarded pile is enabled, the player draws a card from it.
+     * The drawn card becomes the current card in hand.
+     */
     public void movimentoUmanoPescaTerra() {
-//        System.out.println("Sono in movimento umano pescaterra");
         if(interactionOnDeck){
+            // Draw a card from the discarded pile
             cardInHand = discardedCards.getLastERemove();
-//            System.out.println("Carta Pescata da terra: " + cardInHand);
+            // Mark the draw type as from the discarded pile
             this.sceltaPescata = "terra";
+            // Release the semaphore
             semaphoreInteractionOnDeck.release();
         }
     }
 
+    /**
+     * Implements the player's action of drawing a card from the deck pile during their turn.
+     * If the interaction with the deck pile is enabled, the player draws a card from it.
+     * The drawn card becomes the current card in hand.
+     */
     public void movimentoUmanoPescaMazzo(){
-//        System.out.println("Sono in movimento umano pescamazzo");
         if(interactionOnDeck) {
+            // Draw a card from the deck pile
             cardInHand = gameDeck.giveCard();
-//            System.out.println("Carta pescata dal mazzo: " + cardInHand);
+            // Mark the draw type as from the deck pile
             this.sceltaPescata = "mazzo";
+            // Release the semaphore
             semaphoreInteractionOnDeck.release();
         }
     }
 
+
+    /**
+     * Executes the game logic for a player's turn, including drawing a card and making moves.
+     * It handles various game scenarios such as game termination, drawing from the deck or the discarded pile,
+     * making moves on the player's board, and updating the game state accordingly.
+     * This method covers the human player's turn and the computer player's turn.
+     */
     public void turnoDiGioco() {
+        // Reset the draw choice
         sceltaPescata = "";
 
+        // Check if it's the last round and the current player is the first player who won the last round
         if(ultimoGiro && playerIndex == firtPlayerIndexWinner) {
-//            System.out.println("Sono qui");
+            // Check if the game should be terminated
             if (termineRoundOTermineGioco()) {
                 System.out.println("Gioco Terminato");
 
+                // Ask if the player wants to play again
                 System.out.println("Vuoi giocare nuovamente?: ");
                 Scanner scanner = new Scanner(System.in);
                 String scelta = scanner.nextLine();
@@ -235,71 +310,67 @@ public class MatchManager extends Observable {
                 }
                 else
                     throw new RuntimeException("Scelta non valida!");
-
-
             } else {
-                //Elimino carta visualizzata a terra
+                // Notify the start of the game
                 setChanged();
                 notifyObservers(Arrays.asList(0, playerList, playerIndex, discardedCards, gameDeck));
             }
         }
 
-//        System.out.println("********************************");
-//        if (playerIndex != -1) {
-////            System.out.println("Turno di: " + playerList.get(playerIndex).getNickname());
-////            System.out.println(" * Carta coperta: " + cardInHand);
-//        }
-
-        //Controllo se carte del mazzo sono terminate
+        // Check if the deck is empty
         if (gameDeck.getRemainingCardOfDeck() == 0) {
+            // Reshuffle the discarded pile into the deck
             Deck.mischiaMazzo(discardedCards);
             this.gameDeck = discardedCards;
             discardedCards = new Deck();
         }
 
         Card appCard;
+        // Get the current player in the round
         Player playerInRound = playerList.get(playerIndex);
 
-        //Turno Umano
+        // Human Player's Turn
         if(playerIndex == 0){
-//            System.out.println("Fa la tua scelta");
-            System.out.println(gameDeck.getFirst());
 
-
+            // Notify observers about the interaction
             setChanged();
             notifyObservers(Arrays.asList(14, gameDeck, discardedCards));
 
             try {
                 interactionOnDeck = true;
-//                System.out.println("Acquisito");
                 semaphoreInteractionOnDeck.acquire();
-//                System.out.println("Rilasciato");
+
                 interactionOnDeck = false;
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//            System.out.println("Sono qui 1");
         }
-        //Turno Computer
+        // Computer Player's Turn
         else{
             setChanged();
             notifyObservers(Arrays.asList(15));
-            //Se le scartate sono un Re o Jolly
+
+            // If the last discarded card is a King or a Joker
             if(discardedCards.getLast().getRank() == CardRank.RE || discardedCards.getLast().getRank() == CardRank.JOLLY){
-                cardInHand = discardedCards.getLastERemove();
-                
-            //Se il rank carta > 10 o maggiore della dimensione board giocatore o la faceUp non è un Wildcard
-            } else if (discardedCards.getLast().getRank().rankToValue() > 10 || discardedCards.getLast().getRank().rankToValue() > playerInRound.getboardCardDimension() || (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getFaceUp() && (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.JOLLY && playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.RE))) {
+                cardInHand = discardedCards.getLastERemove();//
+            }
+            //If the value of the last discarded card is greater than 10 or exceeds the dimensions of the player board card,
+            //or if the corresponding card is face-up and not a wildcard.
+            else if (discardedCards.getLast().getRank().rankToValue() > 10 ||
+                    discardedCards.getLast().getRank().rankToValue() > playerInRound.getboardCardDimension() ||
+                    (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getFaceUp() &&
+                            (playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.JOLLY && playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue() - 1).getRank() != CardRank.RE)
+                    )) {
                 cardInHand = this.gameDeck.giveCard();
                 sceltaPescata = "mazzo";
             }
-            //Ottimizzazione scelta giocatore con carte < 5
+            // Optimization of player choice with cards < 5
             else if(!playerInRound.getBoardCards().get(discardedCards.getLast().getRank().rankToValue()-1).getFaceUp() && playerInRound.getRemainingCards()< 5){
                 cardInHand = discardedCards.getLastERemove();
                 sceltaPescata = "terra";
             }
-            //scelgo casualmente se pescare dal mazzo o da terra
+            // Random decision regarding whether to take a card from the deck or from the board
             else{
                 if(casuale0e1() == 0) {
                     cardInHand = this.gameDeck.giveCard();
@@ -312,7 +383,7 @@ public class MatchManager extends Observable {
             }
         }
 
-        //Movimento carta vicino al Player di turno e la Ruoto
+        // Move and rotate the card near the current player
         setChanged();
         notifyObservers(Arrays.asList(11, playerIndex, sceltaPescata));
 
@@ -320,20 +391,26 @@ public class MatchManager extends Observable {
             sleep(1000);
 
             cardInHand.setFaceUpTrue();
+
+            // Taking cardInHand index using card value
             int cardInHandIndex = cardInHand.getRank().rankToValue() - 1;
 
+            // Check if cardInHand is Jack or Queen
             if (controlloCartaJackDonna(cardInHand)) {
                 discardedCards.addCard(cardInHand);
 
+                // Notify observers about the change
                 setChanged();
                 notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
 
                 break;
 
-            //Controllo se la carta in mano è una WildCard
+            // Check in cardInHand is a Wildcard
             } else if (controlloCartaJollyRe(cardInHand)) {
+                // If it's the computer's turn
                 if (playerIndex != 0)
                     movimentoComputer(playerInRound);
+                // If it's the human player turn
                 else {
                     setChanged();
                     notifyObservers(Arrays.asList(16));
@@ -348,118 +425,97 @@ public class MatchManager extends Observable {
                     interactionOnBoard = false;
                 }
 
+                // Reduce number of face down card
                 playerInRound.reduceRemainingCards();
 
+                // Check if the current player has no remaining face-down cards
                 if (controlloJtrash()) {
-                    //Rimuovo visualizzazione carta pescata dal giocatore
-
-//                    System.out.println(" * Scarto: " + cardInHand);
                     discardedCards.addCard(cardInHand);
-
+                    // Notify observers about the change
                     setChanged();
                     notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
                     break;
                 }
             }
 
-            //se indice carta è maggiore di dimensione del board del giocatore e non è una WildCard
+            // If cardInHand value is greater than the dimension of board card
             else if (cardInHandIndex >= playerInRound.getboardCardDimension()) {
+                // Discard the card
                 discardedCards.addCard(cardInHand);
-
+                // Notify observers about the change
                 setChanged();
                 notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-//                System.out.println(" * Scarto: " + cardInHand);
-
                 break;
             }
-            //Se la carta non è una figura
+            // If the card has no figure
             else {
-                //controllo posizione già occupata\scoperta
+                // Check if corresponding card in board position is face up
                 if (playerInRound.getBoardCards().get(cardInHandIndex).getFaceUp()) {
-                    //se occupata da Jolly o Re
+                    // If it's a wildcard
                     if (playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.JOLLY ||
                             playerInRound.getBoardCards().get(cardInHandIndex).getRank() == CardRank.RE) {
 
-                        //Carta appoggio per WildCards che era sul board
+                        //Backup card for WildCards that were on the board
                         appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
-                       //Stampe
-//                        playerInRound.showCard();
-//                        System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  256");
-//                        System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
-
-                        //sostituisco WildCard sul board con carta in mano
+                        // Replace WildCard on board with cardInHand
                         playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
 
+                        // Notify observers about the change
                         setChanged();
                         notifyObservers(Arrays.asList(12, playerIndex, cardInHandIndex, cardInHand, appCard, sceltaPescata));
 
-                        //Aggiorno visualizzazione carta vicino al giocatore
+                        // Backup card is the new cardInHand
                         cardInHand = appCard;
 
+                        // Check if the current player has no remaining face-down cards
                         if (controlloJtrash()) {
-                            //Rimuovo visualizzazione carta pescata dal giocatore
-
-//                            System.out.println(" * Scarto: " + cardInHand);
                             discardedCards.addCard(cardInHand);
 
+                            // Notify observers about the change
                             setChanged();
                             notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-
                             break;
                         }
                     }
 
-                    //altrimenti
+                    // If it is not a wildcard
                     else {
                         discardedCards.addCard(cardInHand);
-//                        System.out.println(" * Scarto: " + cardInHand);
 
+                        // Notify observers about the change
                         setChanged();
                         notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
-
-//                        In revisione
                         break;
                     }
                 }
 
-                //se posizione non è occupata
+                // Check if corresponding card in board position is face DOWN
                 else {
-                    //prendo in mano carta coperta del board giocatore
+                    //Backup card for card that were on the board
                     appCard = playerInRound.getBoardCards().get(cardInHandIndex);
 
-                    //posiziono la carta
-//                    playerInRound.showCard();
-//                    System.out.println(" * Scambio: " + cardInHand + " con " + appCard + "  299");
-//                    System.out.println(" * Indici: " + cardInHand.getRank().rankToValue() + " con " + cardInHandIndex);
-
+                    // Notify observers about the change
                     setChanged();
                     notifyObservers(Arrays.asList(8, playerIndex, cardInHandIndex));
 
                     sleep(2000);
 
-                    //Scambio le carte
+                    // Exchange the cards and notify observers about the change
                     playerInRound.getBoardCards().set(cardInHandIndex, cardInHand);
                     setChanged();
                     notifyObservers(Arrays.asList(12, playerIndex, cardInHandIndex, cardInHand, appCard, sceltaPescata));
 
-//                    cardInHand = appCard;
-
-//                    if(!discardedCards.isEmpty()) {
-////                        In revisione
-//                        //Aggiorno carta sul tavolo
-//                    }
-
                     cardInHand = appCard;
 
+                    // Reduce number of face down card
                     playerInRound.reduceRemainingCards();
 
+                    // Check if the current player has no remaining face-down cards
                     if (controlloJtrash()) {
-                        //Rimuovo visualizzazione carta pescata dal giocatore
-//                        System.out.println(" * Scarto: " + cardInHand);
-
                         discardedCards.addCard(cardInHand);
 
+                        // Notify observers about the change
                         setChanged();
                         notifyObservers(Arrays.asList(13, sceltaPescata, discardedCards, gameDeck, cardInHand));
                         break;
@@ -469,9 +525,15 @@ public class MatchManager extends Observable {
 
         } while (true);
 
+        // Calculate the next player in turn
         calcolaTurno();
     }
 
+    /**
+     * A utility method to pause the current thread for a specified amount of time.
+     *
+     * @param millis The number of milliseconds to sleep
+     */
     private static void sleep(int millis) {
         try {
             Thread.sleep(millis);
@@ -480,42 +542,55 @@ public class MatchManager extends Observable {
         }
     }
 
+    /**
+     * Checks if the current round or the game has ended.
+     *
+     * @return {@code true} if the game has ended, {@code false} otherwise
+     */
     public boolean termineRoundOTermineGioco() {
+        // Initialize flag indicating whether the game has ended
         boolean giocoFinito = false;
 
+        // Reduce board card dimension for all winner players
         for(Player p: winnerPlayerList)
             p.reduceBoardCardDimension();
 
-        for (Player p : this.playerList) {
-//            System.out.println("Dimensione Board: " + p.getNickname() + " " + p.getboardCardDimension());
-        }
-
+        // Check each player's board card dimension
         for(Player p: playerList){
+            // If a player has no remaining board cards, the game is finished
             if (p.getboardCardDimension() == 0) {
-                giocoFinito = true;
-                p.incrementaPartiteVinte();
-                System.out.println("Gioco terminato da: " + p.getNickname());
+                giocoFinito = true; // Set game finished flag to true
+                p.incrementaPartiteVinte(); // Increment the number of games won by the player
+                System.out.println("Gioco terminato da: " + p.getNickname()); // Print a message indicating the game has ended for the player
             }
             else
-                p.incrementaPartitePerse();
+                p.incrementaPartitePerse(); // Increment the number of games lost by the player
         }
 
-
+        // If the game has finished, save game statistics
         if(giocoFinito){
-            salvataggioPartite(giocatoriPathVinte);
-            salvataggioPartite(giocatoriPathPerse);
+            salvataggioPartite(giocatoriPathVinte); // Save statistics for games won
+            salvataggioPartite(giocatoriPathPerse); // Save statistics for games lost
         }
 
-
+        // Reset player index and initialize a new game
         this.playerIndex = 0;
         inizializzaGioco();
 
+        // Return whether the game has ended
         return giocoFinito;
     }
 
+    /**
+     * Saves game statistics to a file.
+     *
+     * @param fileDaUsarePath The path of the file to save the statistics
+     */
     private void salvataggioPartite(String fileDaUsarePath) {
+        // Create a File object representing the file path
         File file = new File(fileDaUsarePath);
 
+        // If the file does not exist, create a new file
         if(!file.exists()) {
             try {
                 file.createNewFile();
@@ -524,21 +599,27 @@ public class MatchManager extends Observable {
             }
         }
 
+        // Create a HashMap to store player statistics read from the file
         HashMap<String, Integer> statisticheGiocatoriLette = new HashMap<>();
 
+        // Read player statistics from the file and populate the HashMap
         try(BufferedReader br = new BufferedReader(new FileReader(fileDaUsarePath))){
             String line;
 
+            // Read each line from the file
             while((line = br.readLine()) != null){
+                // Split the line into nickname and number of games played
                 String[] app = line.split(" ");
-
+                // Store the player's nickname and the number of games played in the HashMap
                 statisticheGiocatoriLette.put(app[0], Integer.parseInt(app[1]));
             }
 
         } catch (IOException e) {
+            // Throw a runtime exception if an IOException occurs during file reading
             throw new RuntimeException(e);
         }
 
+        // Update player statistics in the HashMap based on the file being processed
         if(fileDaUsarePath.equals(giocatoriPathVinte)) {
             for (Player p : playerList) {
                 statisticheGiocatoriLette.computeIfPresent(p.getNickname(), (key, value) -> Math.max(value, p.getPartiteVinte()));
@@ -552,8 +633,8 @@ public class MatchManager extends Observable {
             }
         }
 
+        // Write updated player statistics to the file
         FileWriter fw;
-
         try {
             fw = new FileWriter(file.getAbsoluteFile());
         } catch (IOException e) {
@@ -561,6 +642,7 @@ public class MatchManager extends Observable {
         }
         BufferedWriter bw = new BufferedWriter(fw);
 
+        // Iterate through the HashMap and write each player's statistics to the file
         for(String key: statisticheGiocatoriLette.keySet()) {
             try {
                 bw.write(key + " " + statisticheGiocatoriLette.get(key) + "\n");
@@ -569,6 +651,7 @@ public class MatchManager extends Observable {
             }
         }
 
+        // Close the BufferedWriter
         try {
             bw.close();
         } catch (IOException e) {
@@ -576,31 +659,45 @@ public class MatchManager extends Observable {
         }
     }
 
-    private boolean controlloJtrash() {
-        if (playerList.get(playerIndex).getRemainingCards() == 0) {
-//            System.out.println(playerList.get(playerIndex).getNickname() + ": *** JTrash ***");
+    /**
+     * Checks if the current player's remaining cards are zero, indicating JTrash.
+     *
+     * @return {@code true} if JTrash condition is met, {@code false} otherwise
+     */
 
+    private boolean controlloJtrash() {
+        // Check if the current player has no remaining cards
+        if (playerList.get(playerIndex).getRemainingCards() == 0) {
+            // If it's the first time encountering JTrash in the game, update the first player index winner and set the flag to true
             if (!ultimoGiro){
                 firtPlayerIndexWinner = playerIndex;
                 ultimoGiro = true;
-//                System.out.println("ULTIMOOOOO GIROOOOOOOOO");
             }
-
+            // Add the current player to the list of winner players
             winnerPlayerList.add(playerList.get(playerIndex));
 
+            // Return true to indicate that the condition is met
             return true;
         }
         else
-            return false;
+            return false; // If the condition is not met, return false
     }
 
+    /**
+     * Calculates the next player's turn based on the number of players.
+     */
     public void calcolaTurno() {
+
+        // If there are less than 4 players, increment the player index.
+        // If the player index reaches the number of players, reset it to 0.
+
         if(numberOfPlayer <4) {
             this.playerIndex++;
             if (this.playerIndex == numberOfPlayer) {
                 this.playerIndex = 0;
             }
         }
+        //If there are 4 players, use a switch statement to calculate the next player index.
         else {
             switch (playerIndex) {
                 case -1:
@@ -626,6 +723,11 @@ public class MatchManager extends Observable {
         }
     }
 
+    /**
+     * Generates a random number (0 or 1) to decide whether to draw a card from the discard pile or the main deck.
+     *
+     * @return 1 or 0, randomly generated
+     */
     public int casuale0e1(){
         double appNum =  Math.random();
 
@@ -633,38 +735,52 @@ public class MatchManager extends Observable {
             return 1;
         else
             return 0;
-//        return 1;
-
     }
 
-//    public List<Player> getPlayerList() {
-//        return this.playerList;
-//    }
-
+    /**
+     * Sets the number of players.
+     *
+     * @param numberOfPlayer The number of players in the game
+     */
     public void setNumberOfPlayer(int numberOfPlayer) {
         this.numberOfPlayer = numberOfPlayer;
     }
 
+    /**
+     * Moves the card from the player's hand to the board at the specified index.
+     *
+     * @param cardIndex The index on the board where the card will be moved
+     */
     public void movimentoUmanoPescaBoardIndex(int cardIndex) {
 
+        // Check if there is an interaction on the board
         if(interactionOnBoard) {
 
+            // Check if the card at the specified index is face down
             if(!playerList.get(playerIndex).getBoardCards().get(cardIndex - 1).getFaceUp()){
+                // Store the card at the specified index in a temporary variable
                 Card app = playerList.get(playerIndex).getBoardCards().get(cardIndex-1);
+                // Replace the card at the specified index with the card in hand
                 playerList.get(playerIndex).getBoardCards().set(cardIndex-1,cardInHand);
 
+                // Notify observers about the move
                 setChanged();
                 notifyObservers(Arrays.asList(12, playerIndex, cardIndex-1, cardInHand, app, sceltaPescata));
 
+                // Update the card in hand with the stored card
                 cardInHand = app;
+                // Release the semaphore for interaction on the board
                 semaphoreInteractionOnBoard.release();
                 }
             }
 
     }
 
+    /**
+     * Notifies observers to start the game.
+     */
     public void comandoAvviaGioco(){
-//        System.out.println("Premuto il pulsante avvia gioco");
+        // Notify the observers with the command code for starting the game
         setChanged();
         notifyObservers(Arrays.asList(99));
     }

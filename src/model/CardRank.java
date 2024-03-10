@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * Enum that represents the rank of a playing card.
+ */
 public enum CardRank {
     ASSO(1),
     DUE(2),
@@ -18,10 +21,18 @@ public enum CardRank {
 
     private final int value;
 
+    /**
+     * Constructs a CardRank with the specified value.
+     * @param value the numerical value associated with the rank
+     */
     CardRank(int value) {
         this.value = value;
     }
 
+    /**
+     * Returns the numerical value associated with the rank.
+     * @return the value associated with the rank
+     */
     public int rankToValue() {
         return value;
     }

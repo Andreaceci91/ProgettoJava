@@ -11,51 +11,108 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.List;
 
+/**
+ * Represents the view for a match in JTrash game.
+ */
 public class MatchView implements Observer {
 
+    /** The width of a card. */
     final int lCard = 76;
+
+    /** The height of a card. */
     final int hCard = 88;
 
-    int widthPanel = 77 * 9;
-    int heightPanel = 88 * 9;
+    /** The width of the game panel. */
+    private int widthPanel = 77 * 9;
 
-    int nRighe = 9;
-    int nColonne = 9;
+    /** The height of the game panel. */
+    private int heightPanel = 88 * 9;
 
+    /** The number of rows on the game board. */
+    private int nRighe = 9;
+
+    /** The number of columns on the game board. */
+    private int nColonne = 9;
+
+    /** The matrix representing the game board. */
     private int[][] matriceScacchiera;
 
-    JTextArea player1TextArea = new JTextArea();
-    JTextArea player2TextArea = new JTextArea();
-    JTextArea player3TextArea = new JTextArea();
-    JTextArea player4TextArea = new JTextArea();
+    /** Text area for player 1 details. */
+    private JTextArea player1TextArea = new JTextArea();
 
-    JTextArea empty1TextArea = new JTextArea();
+    /** Text area for player 2 details. */
+    private JTextArea player2TextArea = new JTextArea();
 
-    MyPanel schermataInizialePanel;
-    JLabel trashLabel;
-    JButton startGameButton;
+    /** Text area for player 3 details. */
+    private JTextArea player3TextArea = new JTextArea();
 
-    MyPanel gamePanel;
-    JFrame mainFrame;
+    /** Text area for player 4 details. */
+    private JTextArea player4TextArea = new JTextArea();
 
-    CartaPersonalizzataButton[] listaCartaPersonalizzataButton0;
-    CartaPersonalizzataButton[] listaCartaPersonalizzataButton1;
-    CartaPersonalizzataButton[] listaCartaPersonalizzataButton2;
-    CartaPersonalizzataButton[] listaCartaPersonalizzataButton3;
+    private JTextArea empty1TextArea = new JTextArea();
 
-    CartaPersonalizzataButton discardedCardsButton;
-    CartaPersonalizzataButton deckButton;
-    CartaPersonalizzataButton secondoToLastDiscardedCardButton;
+    /** Panel for the initial screen. */
+    private MyPanel schermataInizialePanel;
 
-    String cartaCopertaPath = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/" + "SpriteProgetto/CartaCoperta.png";
-    String secondoToLastDiscardedCardPath = "";
+    /** Label for the trash area. */
+    private JLabel trashLabel;
 
-    PersonalMouseListeners.PescaTerraListeners pescaTerraListeners = new PersonalMouseListeners.PescaTerraListeners();
-    PersonalMouseListeners.PescaMazzoListeners pescaMazzoListeners = new PersonalMouseListeners.PescaMazzoListeners();
+    /** Button to start the game. */
+    private JButton startGameButton;
 
+    /** Panel for the game screen. */
+    private MyPanel gamePanel;
+
+    /** The main frame of the application. */
+    private JFrame mainFrame;
+
+    /** Array of custom buttons representing player 1's cards. */
+    private CartaPersonalizzataButton[] listaCartaPersonalizzataButton0;
+
+    /** Array of custom buttons representing player 2's cards. */
+    private CartaPersonalizzataButton[] listaCartaPersonalizzataButton1;
+
+    /** Array of custom buttons representing player 3's cards. */
+    private CartaPersonalizzataButton[] listaCartaPersonalizzataButton2;
+
+    /** Array of custom buttons representing player 4's cards. */
+    private CartaPersonalizzataButton[] listaCartaPersonalizzataButton3;
+
+    /** Custom button representing the discarded cards pile. */
+    private CartaPersonalizzataButton discardedCardsButton;
+
+    /** Custom button representing the deck of cards. */
+    private CartaPersonalizzataButton deckButton;
+
+    /** Custom button representing the second to last discarded card. */
+    private CartaPersonalizzataButton secondoToLastDiscardedCardButton;
+
+    /** Path to the image file of a covered card. */
+    private String cartaCopertaPath = "/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/" + "SpriteProgetto/CartaCoperta.png";
+
+    /** Path to the image file of the second to last discarded card. */
+    private String secondoToLastDiscardedCardPath = "";
+
+    /** Listener for drawing a card from the deck. */
+    private PersonalMouseListeners.PescaTerraListeners pescaTerraListeners = new PersonalMouseListeners.PescaTerraListeners();
+
+    /** Listener for drawing a card from the deck. */
+    private PersonalMouseListeners.PescaMazzoListeners pescaMazzoListeners = new PersonalMouseListeners.PescaMazzoListeners();
+
+    /**
+     * Constructs a MatchView object.
+     */
     public MatchView() {
     }
 
+    /**
+     * Creates the match board based on the given parameters.
+     *
+     * @param listaPlayer      The list of players.
+     * @param playerIndex      The index of the current player.
+     * @param discardedCards   The deck of discarded cards.
+     * @param deckCard         The deck of cards.
+     */
     public void creaScacchieraPixel(List<Player> listaPlayer, int playerIndex, Deck discardedCards, Deck deckCard) {
         if (schermataInizialePanel != null)
             mainFrame.remove(schermataInizialePanel);
@@ -63,7 +120,7 @@ public class MatchView implements Observer {
         if (gamePanel != null)
             mainFrame.remove(gamePanel);
         else {
-            //Setto Mainframe prima volta
+            // Set main frame for the first time
             mainFrame.setLayout(new GridBagLayout());
         }
 
@@ -80,6 +137,15 @@ public class MatchView implements Observer {
         repaintPanelFrame();
     }
 
+    /**
+     * Composes the game panel based on the matrix and player information.
+     *
+     * @param listaPlayer      The list of players.
+     * @param gamePanel        The game panel.
+     * @param playerIndex      The index of the current player.
+     * @param discardedCards   The deck of discarded cards.
+     * @param deckCard         The deck of cards.
+     */
     public void composeGamePanelFromMatrix(List<Player> listaPlayer, MyPanel gamePanel, int playerIndex, Deck discardedCards, Deck deckCard) {
         int playerIndexMatrix;
         CartaPersonalizzataButton cartaPersonalizzataButton;
@@ -88,8 +154,6 @@ public class MatchView implements Observer {
         listaCartaPersonalizzataButton1 = new CartaPersonalizzataButton[10];
         listaCartaPersonalizzataButton2 = new CartaPersonalizzataButton[10];
         listaCartaPersonalizzataButton3 = new CartaPersonalizzataButton[10];
-
-//        int indiceCarteScacchiera = 0;
 
         for (int i = 0; i < matriceScacchiera.length; i++) {
             for (int j = 0; j < matriceScacchiera[0].length; j++) {
@@ -147,7 +211,7 @@ public class MatchView implements Observer {
             }
         }
 
-        //Carta del mazzo
+        //Deck card
         String deckCardPath = getStringPathFromCard(deckCard.getFirst());
         deckButton = new CartaPersonalizzataButton(5 * lCard, 4 * hCard, cartaCopertaPath, deckCardPath);
 
@@ -156,12 +220,12 @@ public class MatchView implements Observer {
 
         gamePanel.add(deckButton);
 
-        //Carta sempre coperta per simulare carte che rimangono a terra del mazzo
+        // Hidden card to simulate cards remaining on the ground of the deck
         CartaPersonalizzataButton deckButtonVisualizzataCoperta = new CartaPersonalizzataButton(5 * lCard, 4 * hCard, cartaCopertaPath, cartaCopertaPath);
         gamePanel.add(deckButtonVisualizzataCoperta);
 
 
-        // Carta a terra
+        // Discarded card
         if (!discardedCards.isEmpty()) {
             Card lastCardDiscarded = discardedCards.getLast();
             String pathDiscardedCars = getStringPathFromCard(lastCardDiscarded);
@@ -174,6 +238,16 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Generates a custom button representing a player's card.
+     *
+     * @param listaPlayer The list of players.
+     * @param playerIndex The index of the player.
+     * @param i           The row index of the card.
+     * @param j           The column index of the card.
+     * @return The generated custom button.
+     */
+
     private CartaPersonalizzataButton generazioneCarteGiocatori2(List<Player> listaPlayer, int playerIndex, int i, int j) {
         CartaPersonalizzataButton cardButton;
         String pathPlayerCardVisionata;
@@ -182,6 +256,7 @@ public class MatchView implements Observer {
         Player player = listaPlayer.get(playerIndex);
         playerCardVisionata = player.getCardFromIndex(matriceScacchiera[i][j]);
 
+        // Setting the path based on whether the card is face up or face down
         if (playerCardVisionata.getFaceUp()) {
             pathPlayerCardVisionata = getStringPathFromCard(playerCardVisionata);
             pathPlayerCardRetro = getStringPathFromCard(playerCardVisionata);
@@ -190,12 +265,20 @@ public class MatchView implements Observer {
             pathPlayerCardRetro = getStringPathFromCard(playerCardVisionata);
         }
 
+        // Creating the custom button
         cardButton = new CartaPersonalizzataButton(j * lCard, i * hCard, pathPlayerCardVisionata, pathPlayerCardRetro);
 
+        // Setting border
         cardButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         return cardButton;
     }
 
+    /**
+     * Adds main elements to the frame using GridBagConstraints for layout.
+     *
+     * @param mainFrame  The main frame.
+     * @param gamePanel  The game panel.
+     */
     private void addingMainElementToFrame(JFrame mainFrame, MyPanel gamePanel) {
         GridBagConstraints gbcEmpty1TextArea = new GridBagConstraints();
         gbcEmpty1TextArea.weighty = 0.1;
@@ -263,6 +346,12 @@ public class MatchView implements Observer {
         mainFrame.add(empty1TextArea, gbcEmpty1TextArea);
     }
 
+    /**
+     * Converts the card object to its corresponding path string.
+     *
+     * @param card The card object.
+     * @return The path string for the card image.
+     */
     private static String getStringPathFromCard(Card card) {
         String path;
         String cardRank = card.getRank().toString().toLowerCase();
@@ -281,6 +370,11 @@ public class MatchView implements Observer {
         return path;
     }
 
+    /**
+     * Sets up the initial matrix based on the player list.
+     *
+     * @param listaPlayer The list of players.
+     */
     private void impostaMatriceIniziale(List<Player> listaPlayer) {
         impostaMatricePlayerUp(listaPlayer);
         impostaMatricePlayerDown(listaPlayer);
@@ -296,6 +390,11 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Sets up the player matrix on the right side.
+     *
+     * @param listaPlayer The list of players.
+     */
     private void impostaMatricePlayerRight(List<Player> listaPlayer) {
         int nFileCarta;
         int numeroCartePlayer = (listaPlayer.get(3)).getboardCardDimension();
@@ -321,16 +420,24 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Sets up the player matrix on the left side.
+     *
+     * @param listaPlayer The list of players.
+     */
+
     private void impostaMatricePlayerLeft(List<Player> listaPlayer) {
         int indice = 1;
         int nCol;
         int numeroCartePlayer = (listaPlayer.get(2)).getboardCardDimension();
 
+        // Determine the number of columns based on the number of player cards
         if (numeroCartePlayer <= 5)
             nCol = 1;
         else
             nCol = 2;
 
+        // Populate the matrix
         if (nCol == 1) {
             for (int i = 2; i < 2 + numeroCartePlayer; i++)
                 matriceScacchiera[i][1] = indice++;
@@ -345,16 +452,23 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Sets up the player matrix upwards.
+     *
+     * @param listaPlayer The list of players.
+     */
     private void impostaMatricePlayerUp(List<Player> listaPlayer) {
         int nFileCarte;
         int numeroCartePlayer = (listaPlayer.getFirst()).getboardCardDimension();
         int indice = numeroCartePlayer;
 
+        // Determine the number of rows based on the number of player cards
         if (numeroCartePlayer <= 5)
             nFileCarte = 1;
         else
             nFileCarte = 2;
 
+        // Populate the matrix
         if (nFileCarte == 1) {
             for (int j = 2; j < 2 + numeroCartePlayer; j++) {
                 matriceScacchiera[1][j] = indice--;
@@ -372,17 +486,24 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Sets up the player matrix downwards.
+     *
+     * @param listaPlayer The list of players.
+     */
     private void impostaMatricePlayerDown(List<Player> listaPlayer) {
         int indice = 1;
 
         int nFileCarte;
         int numeroCartePlayer = (listaPlayer.get(1)).getboardCardDimension();
 
+        // Determine the number of rows based on the number of player cards
         if (numeroCartePlayer <= 5)
             nFileCarte = 1;
         else
             nFileCarte = 2;
 
+        // Populate the matrix
         if (nFileCarte == 1) {
             for (int j = 2; j < 2 + numeroCartePlayer; j++) {
                 matriceScacchiera[nRighe - 2][j] = indice++;
@@ -398,21 +519,33 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Sets the details of player boxes.
+     *
+     * @param playerList       The list of players.
+     * @param player1TextArea The text area for player 1.
+     * @param player2TextArea The text area for player 2.
+     * @param player3TextArea The text area for player 3.
+     * @param player4TextArea The text area for player 4.
+     */
     private void setPlayerBoxDetails(List<Player> playerList, JTextArea player1TextArea, JTextArea player2TextArea,
                                      JTextArea player3TextArea, JTextArea player4TextArea) {
 
+        // Set details for player 1
         player1TextArea.setText("");
         player1TextArea.append("Nickname: " + playerList.get(0).getNickname() + "\n");
         player1TextArea.append("BoardCardDimension: " + playerList.get(0).getboardCardDimension() + "\n");
         player1TextArea.append("Lv: " + playerList.get(0).getPartiteVinte() + " - ");
         player1TextArea.append("Perse: " + playerList.get(0).getPartitePerse());
 
+        // Set details for player 2
         player2TextArea.setText("");
         player2TextArea.append("Nickname: " + playerList.get(1).getNickname() + "\n");
         player2TextArea.append("BoardCardDimension: " + playerList.get(1).getboardCardDimension() + "\n");
         player2TextArea.append("Lv: " + playerList.get(1).getPartiteVinte()+ " - ");
         player2TextArea.append("Perse: " + playerList.get(1).getPartitePerse());
 
+        // Set details for player 3
         if (playerList.size() >= 3) {
             player3TextArea.setText("");
             player3TextArea.append("Nickname: " + playerList.get(2).getNickname() + "\n");
@@ -421,6 +554,7 @@ public class MatchView implements Observer {
             player3TextArea.append("Perse: " + playerList.get(2).getPartitePerse());
         }
 
+        // Set details for player 4
         if (playerList.size() >= 4) {
             player4TextArea.setText("");
             player4TextArea.append("Nickname: " + playerList.get(3).getNickname() + "\n");
@@ -430,6 +564,9 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * Invalidates and repaints the panel frame.
+     */
     public void repaintPanelFrame() {
         mainFrame.invalidate();
         gamePanel.invalidate();
@@ -439,10 +576,17 @@ public class MatchView implements Observer {
         gamePanel.revalidate();
     }
 
+    /**
+     * Gets the position of the card near the player.
+     *
+     * @param playerIndex The index of the player.
+     * @return The position of the card.
+     */
     private Result getPosizioneCartaVicinoPlayer(int playerIndex) {
         int posX = 0;
         int posY = 0;
 
+        // Determine the position based on the player index
         if (playerIndex == 0) {
             posX = lCard;
             posY = 0 * hCard;
@@ -460,9 +604,16 @@ public class MatchView implements Observer {
         return result;
     }
 
+    /**
+     * Swaps drawn cards between player's board and hand.
+     *
+     * @param playerIndex     The index of the player.
+     * @param cardInHandIndex The index of the card in hand.
+     * @param sceltaPescata   The choice of the drawn card.
+     */
     public void scambiaCartePescataEBoard(int playerIndex, int cardInHandIndex, String sceltaPescata) {
 
-        //Prendo posizione carta Vicino al giocatore in base al PlayerIndex
+        // Get position of card near player
         Result result = getPosizioneCartaVicinoPlayer(playerIndex);
         Point point = new Point();
         point.x = result.posX;
@@ -471,7 +622,7 @@ public class MatchView implements Observer {
 
         CartaPersonalizzataButton appCard;
 
-        //Muovo la carta dal board del giocatore alla posizione vicino al giocatore
+        // Move the card from the player's board to the position near the player
         if (playerIndex == 0) {
             listaCartaPersonalizzataButton0[cardInHandIndex].avviaRotazione();
             SLEEP(500);
@@ -494,11 +645,13 @@ public class MatchView implements Observer {
             cardBoardPoint = listaCartaPersonalizzataButton3[cardInHandIndex].getLocation();
         }
 
+        // Move the drawn card from deck to player's board or discard pile
         if (sceltaPescata.equals("mazzo")) {
-            //Muovo la carta pescata dal mazzo nelle carte del Board del giocatore
+            /// Move card from deck to player's board
             deckButton.avviaMovimento(cardBoardPoint.x, cardBoardPoint.y);
             SLEEP(1000);
 
+            // Swap the cards
             if (playerIndex == 0) {
                 listaCartaPersonalizzataButton0[cardInHandIndex].avviaRotazione();
                 SLEEP(500);
@@ -523,10 +676,11 @@ public class MatchView implements Observer {
             deckButton = appCard;
 
         } else {
-            //Muovo la carta pescata mazzo nelle carte del Board del giocatore
+            // Move card from discard pile to player's board
             discardedCardsButton.avviaMovimento(cardBoardPoint.x, cardBoardPoint.y);
             SLEEP(100);
 
+            // Swap the cards
             if (playerIndex == 0) {
                 appCard = listaCartaPersonalizzataButton0[cardInHandIndex];
                 listaCartaPersonalizzataButton0[cardInHandIndex] = discardedCardsButton;
@@ -545,19 +699,31 @@ public class MatchView implements Observer {
         }
     }
 
+    /**
+     * A record representing a result with X and Y coordinates.
+     */
+
     private record Result(int posX, int posY) {
     }
 
+    /**
+     * Updates the view based on changes in the observable.
+     *
+     * @param o   The observable object.
+     * @param arg The argument passed by the observable.
+     */
     @Override
     public void update(Observable o, Object arg) {
         List<?> list;
 
+        // Check if the argument is a list
         if (arg instanceof List<?>)
             list = (List<?>) arg;
         else
             throw new RuntimeException("Errore nel metodo Update, non è stata fornita una lista");
 
-        //Segnale 0 che corrisponde ad inizializzazione giocatori
+        // Handle different signals
+        // Signal 0: Initialize players
         if ((int) list.get(0) == 0) {
             List<?> listaPlayer = (List<?>) list.get(1);
             if (listaPlayer.get(0) instanceof Player) {
@@ -570,7 +736,7 @@ public class MatchView implements Observer {
             repaintPanelFrame();
         }
 
-        //Avvio la rotazione della carta nel board del giocatoere che viene scambiata
+        // Signal 8: Rotate the card in the player's board
         if ((int) list.get(0) == 8) {
             int playerIndex = (int) list.get(1);
             int cardInHandIndex = (int) list.get(2);
@@ -593,17 +759,17 @@ public class MatchView implements Observer {
             }
         }
 
-        //Passato segnale 9 che corrisponde ad inizializzazione giocatori
+        // Signal 9: Start the initial screen
         if ((int) list.get(0) == 9) {
             new SchermataIniziale();
         }
 
-        //Passato segnale 99 che corrisponde ad inizializzazione giocatori
+        // Signal 99: Stop the initial screen loop
         if ((int) list.get(0) == 99) {
             SchermataIniziale.setInterrompiCiclo();
         }
 
-        //Movimento carta(terra o mazzo) -> vicino ai giocatori
+        // Signal 11: Move card (from deck to player's board or discard)
         if ((int) list.get(0) == 11) {
             int playerIndex = (int) list.get(1);
             String sceltaCartaGiocatore = (String) list.get(2);
@@ -611,15 +777,14 @@ public class MatchView implements Observer {
             Result result = getPosizioneCartaVicinoPlayer(playerIndex);
             System.out.println("Sono qui 3");
 
-            //Movimento carta a Terra
+            // Move discarded button card to player's board
             if (sceltaCartaGiocatore.equals("terra")) {
                 discardedCardsButton.avviaMovimento(result.posX(), result.posY());
 
                 SLEEP(1500);
-
-                System.out.println("sono qui 4");
             }
-            //Movimento carta Mazzo
+
+            // Move deck button card to player's board
             else {
                 deckButton.avviaMovimento(result.posX(), result.posY());
                 SLEEP(1500);
@@ -629,7 +794,7 @@ public class MatchView implements Observer {
             }
         }
 
-        //Movimento carta da vicino giocatore a Board del giocatore
+        // Signal 12: Move card from player's hand to board
         if ((int) list.get(0) == 12) {
             int playerIndex = (int) list.get(1);
             int cardInHandIndex = (int) list.get(2);
@@ -638,19 +803,21 @@ public class MatchView implements Observer {
             scambiaCartePescataEBoard(playerIndex, cardInHandIndex, sceltaPescata);
         }
 
-        //Scarto delle carte vicino ai player
+        // Signal 13: Discard cards near players
         if ((int) list.get(0) == 13) {
+            // Discard cards near players
             String sceltaPescata = (String) list.get(1);
             Deck discardedCards = (Deck) list.get(2);
             Deck deckCard = (Deck) list.get(3);
 
-            //Scarto carta pescata da terra
+            // Discard card drawn from the discarded cards
             if (sceltaPescata.equals("terra")) {
                 discardedCardsButton.avviaMovimento(3 * lCard, 4 * hCard);
                 discardedCardsButton.addMouseListener(pescaTerraListeners);
                 SLEEP(1500);
             }
-            //Scarto carta pescata dal mazzo
+
+            // Discard card drawn from the deck cards
             else {
                 gamePanel.remove(discardedCardsButton);
                 gamePanel.revalidate();
@@ -698,7 +865,7 @@ public class MatchView implements Observer {
             }
         }
 
-        //Aggiunta del MouseListener al DeckButton
+        // Signal 14: Add MouseListener to the deck button
         if ((int) list.get(0) == 14) {
             Deck deckCard = (Deck) list.get(1);
 
@@ -716,17 +883,23 @@ public class MatchView implements Observer {
 
         }
 
-        //Disattiva MouseListener se non è turno dell'umano
+        // Signal 15: Disable MouseListener if it's not the player's turn
         if ((int) list.get(0) == 15) {
             pescaMazzoListeners.setClickableOnDeckFalse();
             pescaMazzoListeners.setClickableOnBoardCardFalse();
         }
 
+        // Signal 16: Enable MouseListener for board card
         if ((int) list.get(0) == 16) {
             pescaMazzoListeners.setClickableOnBoardCardTrue();
         }
     }
 
+    /**
+     * Static sleep method to introduce delay.
+     *
+     * @param millis The number of milliseconds to sleep.
+     */
     private static void SLEEP(int millis) {
         try {
             Thread.sleep(millis);
@@ -736,22 +909,34 @@ public class MatchView implements Observer {
     }
 
 
+    /**
+     * Initializes the main game screen.
+     */
     public class SchermataIniziale {
         public static boolean interrompiCiclo = false;
 
+        /**
+         * Sets the flag to interrupt the cycle.
+         */
         public static void setInterrompiCiclo() {
             interrompiCiclo = true;
         }
 
+        /**
+         * Constructs the initial screen.
+         */
         public SchermataIniziale() {
+            // Initialize the animation loop flag
             interrompiCiclo = false;
 
+            // If the main frame is not initialized, create it
             if (mainFrame == null) {
                 mainFrame = new JFrame();
                 mainFrame.setLayout(new GridBagLayout());
                 mainFrame.setSize(new Dimension(1440, 900));
                 mainFrame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
             } else {
+                // Remove existing UI elements from the main frame
                 mainFrame.remove(player1TextArea);
                 mainFrame.remove(player2TextArea);
                 mainFrame.remove(player3TextArea);
@@ -760,17 +945,20 @@ public class MatchView implements Observer {
                 mainFrame.remove(empty1TextArea);
                 mainFrame.repaint();
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+                SLEEP(1000);
 
             }
 
+            // Create the initial screen panel
             schermataInizialePanel = new MyPanel("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/CollageCardBackground.png");
             schermataInizialePanel.setLayout(null);
 
+            // Set constraints for the initial screen panel
             GridBagConstraints gbcSchermataInizialePanel = new GridBagConstraints();
             gbcSchermataInizialePanel.weighty = 1;
             gbcSchermataInizialePanel.weightx = 1;
@@ -778,53 +966,61 @@ public class MatchView implements Observer {
             gbcSchermataInizialePanel.gridy = 0;
             gbcSchermataInizialePanel.fill = GridBagConstraints.BOTH;
 
-
+            // Create and configure the start game button
             startGameButton = new JButton("Avvia Gioco");
             startGameButton.setBackground(Color.BLUE);
             startGameButton.addMouseListener(new PersonalMouseListeners.AvviaGioco());
             startGameButton.setBounds(650, 600, 150, 50);
 
+            // Create and configure the trash label
             trashLabel = new JLabel(new ImageIcon("/Users/andrea/Il mio Drive/Università/- Metodologie di programmazione/ProgettoJava/JTrashScritta.png"));
             trashLabel.setBounds(200, 150, 1032, 268);
 
+            // Add UI elements to the initial screen panel
             schermataInizialePanel.add(trashLabel);
             schermataInizialePanel.add(startGameButton);
 
+            // Add the initial screen panel to the main frame
             mainFrame.add(schermataInizialePanel, gbcSchermataInizialePanel);
 
+            // Make the main frame visible
             mainFrame.setVisible(true);
 
+            // Repaint the main frame
             mainFrame.repaint();
 
-
+            // Animation loop
             while (true) {
-
+                // Exit the loop if animation flag is set
                 if (interrompiCiclo)
                     break;
 
+                // Show the trash label
                 schermataInizialePanel.add(trashLabel);
                 trashLabel.setVisible(true);
 
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+                SLEEP(500);
 
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
+                // Hide the trash label
                 trashLabel.setVisible(false);
                 schermataInizialePanel.remove(trashLabel);
                 schermataInizialePanel.revalidate();
                 schermataInizialePanel.repaint();
 
 
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
 
+                SLEEP(500);
+            }
         }
     }
 }
